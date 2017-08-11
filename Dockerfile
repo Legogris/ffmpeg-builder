@@ -63,11 +63,11 @@ ARG HARFBUZZ_VER="1.4.8"
 ARG LAME_VER="3.99.5"
 ARG LIBASS_VER="0.13.7"
 ARG NASM_VER="2.13.01"
-ARG OPENJPEG_VER="2.1.2"
+ARG OPENJPEG_VER="2.2.0"
 ARG OPUS_VER="1.2.1"
 ARG RTMP_VER="2.3"
 ARG SOXR_VER="0.1.2"
-ARG VIDSTAB_VER="release-0.98b"
+ARG VIDSTAB_VER="1.1.0"
 ARG X265_VER="2.5"
 ARG ZIMG_VER="2.5.1"
 
@@ -170,7 +170,7 @@ RUN \
  cd /tmp/ffmpeg-source && \
  git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git && \
  cd libvpx && \
- PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth && \
+ PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-pic && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
@@ -197,11 +197,11 @@ RUN \
 # compile vidstab
 RUN \
  cd /tmp/ffmpeg-source && \
- wget https://github.com/georgmartius/vid.stab/archive/${VIDSTAB_VER}.tar.gz && \
- tar xvf ${VIDSTAB_VER}.tar.gz && \
+ wget https://github.com/georgmartius/vid.stab/archive/v${VIDSTAB_VER}.tar.gz && \
+ tar xvf v${VIDSTAB_VER}.tar.gz && \
  cd vid.stab-${VIDSTAB_VER} && \
- sed -i "s/vidstab SHARED/vidstab STATIC/" ./CMakeLists.txt && \
- PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" && \
+ sed -i "s/BUILD_SHARED_LIBS/BUILD_STATIC_LIBS/" ./CMakeLists.txt && \
+ PATH="$HOME/bin:$PATH" cmake -DCMAKE_INSTALL_PREFIX:PATH="$HOME/ffmpeg_build" && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
@@ -229,9 +229,9 @@ RUN \
 # compile ffmpeg
 RUN \
  cd /tmp/ffmpeg-source && \
- wget http://ffmpeg.org/releases/ffmpeg-${FFMPEG_VER}.tar.bz2 && \
- tar xjvf ffmpeg-${FFMPEG_VER}.tar.bz2 && \
- cd ffmpeg-${FFMPEG_VER} && \
+ wget http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 && \
+ tar xjvf ffmpeg-snapshot.tar.bz2 && \
+ cd ffmpeg && \
  PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
 	--bindir="$HOME/bin" \
 	--enable-ffplay \
@@ -278,7 +278,7 @@ RUN \
 RUN \
  mkdir -p \
 	/package && \
- tar -cvf /package/ffmpeg.tar -C /root/bin/ ffmpeg ffprobe x264 && \
+ tar -cvf /package/ffmpeg.tar -C /root/bin/ ffmpeg ffprobe ffserver && \
  chmod -R 777 /package
 
 CMD ["cp", "-avr", "/package", "/mnt/"]
