@@ -4,26 +4,43 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ARG BUILD_PACKAGES="\
 	autoconf \
 	automake \
+	bash \
 	build-essential \
 	bzip2 \
 	cmake \
 	curl \
+	frei0r-plugins-dev \
+	gawk \
 	git \
 	libass-dev \
+	libfontconfig-dev \
 	libfreetype6-dev \
+	libopencore-amrnb-dev \
+	libopencore-amrwb-dev \
+	libsdl1.2-dev \
+	libspeex-dev \
 	libssl-dev \
 	libtheora-dev \
 	libtool \
 	libva-dev \
 	libvdpau-dev \
+	libvo-amrwbenc-dev \
 	libvorbis-dev \
+	libwebp-dev \
+	libxcb1-dev \
+	libxcb-shm0-dev \
+	libxcb-xfixes0-dev \
+	libxvidcore-dev \
+	lsb-release \
 	mercurial \
 	perl \
 	pkg-config \
+	sudo \
+	tar \
 	texi2html \
-	texinfo \
 	wget \
 	xz-utils \
+	yasm \
 	zlib1g-dev"
 
 # install build packages
@@ -42,27 +59,17 @@ RUN \
 # package versions
 ARG FFMPEG_VER="3.3.3"
 ARG FRIBIDI_VER="0.19.7"
-ARG HARFBUZZ_VER="1.4.6"
+ARG HARFBUZZ_VER="1.4.8"
 ARG LAME_VER="3.99.5"
 ARG LIBASS_VER="0.13.7"
 ARG NASM_VER="2.13.01"
 ARG OPENJPEG_VER="2.1.2"
-ARG OPUS_VER="1.1.5"
+ARG OPUS_VER="1.2.1"
 ARG RTMP_VER="2.3"
 ARG SOXR_VER="0.1.2"
 ARG VIDSTAB_VER="release-0.98b"
-ARG YASM_VER="1.3.0"
+ARG X265_VER="2.5"
 ARG ZIMG_VER="2.5.1"
-
-# compile yasm
-RUN \
- cd /tmp/ffmpeg-source && \
- wget http://www.tortall.net/projects/yasm/releases/yasm-${YASM_VER}.tar.gz && \
- tar xzvf yasm-${YASM_VER}.tar.gz && \
- cd yasm-${YASM_VER} && \
- PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
- PATH="$HOME/bin:$PATH" make && \
- make install
 
 # compile nasm
 RUN \
@@ -85,11 +92,12 @@ RUN \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
-# compile x265
+# compile x265
 RUN \
  cd /tmp/ffmpeg-source && \
- hg clone https://bitbucket.org/multicoreware/x265 && \
- cd x265/build/linux && \
+ wget https://bitbucket.org/multicoreware/x265/downloads/x265_${X265_VER}.tar.gz && \
+ tar xvf x265_${X265_VER}.tar.gz && \
+ cd x265_${X265_VER}/build/linux && \
  PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED:bool=off ../../source && \
  PATH="$HOME/bin:$PATH" make && \
  make install
@@ -225,33 +233,43 @@ RUN \
  tar xjvf ffmpeg-${FFMPEG_VER}.tar.bz2 && \
  cd ffmpeg-${FFMPEG_VER} && \
  PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
-	--prefix="$HOME/ffmpeg_build" \
-	--pkg-config-flags="--static" \
-	--extra-cflags="-I$HOME/ffmpeg_build/include" \
-	--extra-ldflags="-L$HOME/ffmpeg_build/lib" \
-	--extra-ldexeflags="-static" \
 	--bindir="$HOME/bin" \
-	--disable-debug \
-	--disable-ffplay \
+	--enable-ffplay \
+	--enable-ffserver \
+	--enable-fontconfig \
+	--enable-frei0r \
 	--enable-gpl \
 	--enable-libass \
-	--enable-libsoxr \
 	--enable-libfdk-aac \
 	--enable-libfreetype \
+	--enable-libfribidi \
 	--enable-libmp3lame \
+	--enable-libopencore-amrnb \
+	--enable-libopencore-amrwb \
 	--enable-libopenjpeg \
 	--enable-libopus \
-	--enable-libtheora \
 	--enable-librtmp \
+	--enable-libsoxr \
+	--enable-libspeex \
+	--enable-libtheora \
+	--enable-libvidstab \
+	--enable-libvo-amrwbenc \
 	--enable-libvorbis \
 	--enable-libvpx \
+	--enable-libwebp \
 	--enable-libx264 \
 	--enable-libx265 \
-	--enable-libvidstab \
+	--enable-libxvid \
 	--enable-libzimg \
 	--enable-nonfree \
-	--enable-static \
-	--enable-vaapi && \
+	--enable-pic \
+	--enable-vaapi \
+	--enable-version3 \
+	--extra-cflags="-I$HOME/ffmpeg_build/include" \
+	--extra-ldexeflags="-static" \
+	--extra-ldflags="-L$HOME/ffmpeg_build/lib" \
+	--pkg-config-flags="--static" \
+	--prefix="$HOME/ffmpeg_build" && \
  PATH="$HOME/bin:$PATH" make && \
  make install && \
  hash -r
@@ -260,7 +278,7 @@ RUN \
 RUN \
  mkdir -p \
 	/package && \
- tar -cvf /package/ffmpeg.tar -C /root/bin/ ffmpeg ffprobe && \
+ tar -cvf /package/ffmpeg.tar -C /root/bin/ ffmpeg ffprobe x264 && \
  chmod -R 777 /package
 
 CMD ["cp", "-avr", "/package", "/mnt/"]
