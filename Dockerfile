@@ -1,18 +1,18 @@
-FROM ubuntu:xenial
+FROM lsiobase/xenial-root-x86
 
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG BUILD_PACKAGES="\
 	autoconf \
 	automake \
 	build-essential \
-	bzip2 	\
+	bzip2 \
 	cmake \
 	curl \
 	git \
 	libass-dev \
 	libfreetype6-dev \
-	libtheora-dev \
 	libssl-dev \
+	libtheora-dev \
 	libtool \
 	libva-dev \
 	libvdpau-dev \
@@ -37,24 +37,39 @@ RUN \
 # make source folder
 RUN \
  mkdir -p \
-	~/ffmpeg_sources
+	/tmp/ffmpeg-source
+
+# package versions
+ARG FFMPEG_VER="3.3.3"
+ARG FRIBIDI_VER="0.19.7"
+ARG HARFBUZZ_VER="1.4.6"
+ARG LAME_VER="3.99.5"
+ARG LIBASS_VER="0.13.7"
+ARG NASM_VER="2.13.01"
+ARG OPENJPEG_VER="2.1.2"
+ARG OPUS_VER="1.1.5"
+ARG RTMP_VER="2.3"
+ARG SOXR_VER="0.1.2"
+ARG VIDSTAB_VER="release-0.98b"
+ARG YASM_VER="1.3.0"
+ARG ZIMG_VER="2.5.1"
 
 # compile yasm
 RUN \
- cd ~/ffmpeg_sources && \
- wget http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz && \
- tar xzvf yasm-1.3.0.tar.gz && \
- cd yasm-1.3.0 && \
+ cd /tmp/ffmpeg-source && \
+ wget http://www.tortall.net/projects/yasm/releases/yasm-${YASM_VER}.tar.gz && \
+ tar xzvf yasm-${YASM_VER}.tar.gz && \
+ cd yasm-${YASM_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile nasm
 RUN \
- cd ~/ffmpeg_sources && \
- wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.01/nasm-2.13.01.tar.bz2 && \
- tar xjvf nasm-2.13.01.tar.bz2 && \
- cd nasm-2.13.01 && \
+ cd /tmp/ffmpeg-source && \
+ wget http://www.nasm.us/pub/nasm/releasebuilds/${NASM_VER}/nasm-${NASM_VER}.tar.bz2 && \
+ tar xjvf nasm-${NASM_VER}.tar.bz2 && \
+ cd nasm-${NASM_VER} && \
  ./autogen.sh && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
  PATH="$HOME/bin:$PATH" make && \
@@ -62,9 +77,9 @@ RUN \
 
 # compile x264
 RUN \
- cd ~/ffmpeg_sources && \
+ cd /tmp/ffmpeg-source && \
  wget http://download.videolan.org/pub/x264/snapshots/last_x264.tar.bz2 && \
-  tar xjvf last_x264.tar.bz2 && \
+ tar xjvf last_x264.tar.bz2 && \
  cd x264-snapshot* && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --disable-opencl && \
  PATH="$HOME/bin:$PATH" make && \
@@ -72,16 +87,16 @@ RUN \
 
 # compile x265
 RUN \
- cd ~/ffmpeg_sources && \
+ cd /tmp/ffmpeg-source && \
  hg clone https://bitbucket.org/multicoreware/x265 && \
- cd ~/ffmpeg_sources/x265/build/linux && \
+ cd x265/build/linux && \
  PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED:bool=off ../../source && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile libfdk-aac
 RUN \
- cd ~/ffmpeg_sources && \
+ cd /tmp/ffmpeg-source && \
  wget -O fdk-aac.tar.gz https://github.com/mstorsjo/fdk-aac/tarball/master && \
  tar xzvf fdk-aac.tar.gz && \
  cd mstorsjo-fdk-aac* && \
@@ -92,30 +107,30 @@ RUN \
 
 # compile harfbuzz
 RUN \
- cd ~/ffmpeg_sources && \
- wget https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-1.4.6.tar.bz2 && \
- tar xjvf harfbuzz-1.4.6.tar.bz2 && \
- cd harfbuzz-1.4.6 && \
+ cd /tmp/ffmpeg-source && \
+ wget https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-${HARFBUZZ_VER}.tar.bz2 && \
+ tar xjvf harfbuzz-${HARFBUZZ_VER}.tar.bz2 && \
+ cd harfbuzz-${HARFBUZZ_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile fribidi
 RUN \
- cd ~/ffmpeg_sources && \
- wget http://fribidi.org/download/fribidi-0.19.7.tar.bz2 && \
- tar xjvf fribidi-0.19.7.tar.bz2 && \
- cd fribidi-0.19.7 && \
+ cd /tmp/ffmpeg-source && \
+ wget http://fribidi.org/download/fribidi-${FRIBIDI_VER}.tar.bz2 && \
+ tar xjvf fribidi-${FRIBIDI_VER}.tar.bz2 && \
+ cd fribidi-${FRIBIDI_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile libass
 RUN \
- cd ~/ffmpeg_sources && \
- wget https://github.com/libass/libass/archive/0.13.7.tar.gz && \
- tar xvf 0.13.7.tar.gz && \
- cd libass-0.13.7 && \
+ cd /tmp/ffmpeg-source && \
+ wget https://github.com/libass/libass/archive/${LIBASS_VER}.tar.gz && \
+ tar xvf ${LIBASS_VER}.tar.gz && \
+ cd libass-${LIBASS_VER} && \
  ./autogen.sh && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
  PATH="$HOME/bin:$PATH" make && \
@@ -123,27 +138,28 @@ RUN \
 
 # compile lame
 RUN \
- cd ~/ffmpeg_sources && \
- wget http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz && \
- tar xzvf lame-3.99.5.tar.gz && \
- cd lame-3.99.5 && \
+ cd /tmp/ffmpeg-source && \
+ LAME_BRANCH=${LAME_VER%.*} && \
+ wget http://downloads.sourceforge.net/project/lame/lame/${LAME_BRANCH}/lame-${LAME_VER}.tar.gz && \
+ tar xzvf lame-${LAME_VER}.tar.gz && \
+ cd lame-${LAME_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --enable-nasm --disable-shared && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile opus
 RUN \
- cd ~/ffmpeg_sources && \
- wget https://archive.mozilla.org/pub/opus/opus-1.1.5.tar.gz && \
- tar xzvf opus-1.1.5.tar.gz && \
- cd opus-1.1.5 && \
+ cd /tmp/ffmpeg-source && \
+ wget https://archive.mozilla.org/pub/opus/opus-${OPUS_VER}.tar.gz && \
+ tar xzvf opus-${OPUS_VER}.tar.gz && \
+ cd opus-${OPUS_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile libvpx
 RUN \
- cd ~/ffmpeg_sources && \
+ cd /tmp/ffmpeg-source && \
  git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git && \
  cd libvpx && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth && \
@@ -152,41 +168,62 @@ RUN \
 
 # compile rtmp
 RUN \
- cd ~/ffmpeg_sources && \
- wget https://rtmpdump.mplayerhq.hu/download/rtmpdump-2.3.tgz && \
- tar xvf rtmpdump-2.3.tgz && \
- cd rtmpdump-2.3 && \
+ cd /tmp/ffmpeg-source && \
+ wget https://rtmpdump.mplayerhq.hu/download/rtmpdump-${RTMP_VER}.tgz && \
+ tar xvf rtmpdump-${RTMP_VER}.tgz && \
+ cd rtmpdump-${RTMP_VER} && \
  sed -i "s#prefix=.*#prefix=$HOME/ffmpeg_build#" ./Makefile && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile soxr
 RUN \
- cd ~/ffmpeg_sources && \
- wget https://sourceforge.net/projects/soxr/files/soxr-0.1.2-Source.tar.xz && \
- tar xvf soxr-0.1.2-Source.tar.xz && \
- cd soxr-0.1.2-Source && \
+ cd /tmp/ffmpeg-source && \
+ wget https://sourceforge.net/projects/soxr/files/soxr-${SOXR_VER}-Source.tar.xz && \
+ tar xvf soxr-${SOXR_VER}-Source.tar.xz && \
+ cd soxr-${SOXR_VER}-Source && \
  PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DBUILD_SHARED_LIBS:bool=off -DWITH_OPENMP:bool=off -DBUILD_TESTS:bool=off && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile vidstab
 RUN \
- cd ~/ffmpeg_sources && \
- wget https://github.com/georgmartius/vid.stab/archive/release-0.98b.tar.gz && \
- tar xvf release-0.98b.tar.gz && \
- cd vid.stab-release-0.98b && \
+ cd /tmp/ffmpeg-source && \
+ wget https://github.com/georgmartius/vid.stab/archive/${VIDSTAB_VER}.tar.gz && \
+ tar xvf ${VIDSTAB_VER}.tar.gz && \
+ cd vid.stab-${VIDSTAB_VER} && \
  sed -i "s/vidstab SHARED/vidstab STATIC/" ./CMakeLists.txt && \
  PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
+# compile openjpeg
+RUN \
+ cd /tmp/ffmpeg-source && \
+ wget https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VER}.tar.gz && \
+ tar xvf v${OPENJPEG_VER}.tar.gz && \
+ cd openjpeg-${OPENJPEG_VER} && \
+ PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DBUILD_SHARED_LIBS:bool=off && \
+ PATH="$HOME/bin:$PATH" make && \
+ make install
+
+# compile zimg
+RUN \
+ cd /tmp/ffmpeg-source && \
+ wget https://github.com/sekrit-twc/zimg/archive/release-${ZIMG_VER}.tar.gz && \
+ tar xvf release-${ZIMG_VER}.tar.gz && \
+ cd zimg-release-${ZIMG_VER} && \
+ ./autogen.sh && \
+ PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static && \
+ PATH="$HOME/bin:$PATH" make && \
+ make install
+
 # compile ffmpeg
 RUN \
- cd ~/ffmpeg_sources && \
- wget http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2 && \
- tar xjvf ffmpeg-snapshot.tar.bz2 && \
- cd ffmpeg && \
+ cd /tmp/ffmpeg-source && \
+ wget http://ffmpeg.org/releases/ffmpeg-${FFMPEG_VER}.tar.bz2 && \
+ tar xjvf ffmpeg-${FFMPEG_VER}.tar.bz2 && \
+ cd ffmpeg-${FFMPEG_VER} && \
  PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
 	--prefix="$HOME/ffmpeg_build" \
 	--pkg-config-flags="--static" \
@@ -202,6 +239,7 @@ RUN \
 	--enable-libfdk-aac \
 	--enable-libfreetype \
 	--enable-libmp3lame \
+	--enable-libopenjpeg \
 	--enable-libopus \
 	--enable-libtheora \
 	--enable-librtmp \
@@ -210,6 +248,7 @@ RUN \
 	--enable-libx264 \
 	--enable-libx265 \
 	--enable-libvidstab \
+	--enable-libzimg \
 	--enable-nonfree \
 	--enable-static \
 	--enable-vaapi && \
@@ -217,6 +256,11 @@ RUN \
  make install && \
  hash -r
 
+# archive artefacts
 RUN \
- apt-get purge -y --auto-remove \
-	${BUILD_PACKAGES}
+ mkdir -p \
+	/package && \
+ tar -cvf /package/ffmpeg.tar -C /root/bin/ ffmpeg ffprobe && \
+ chmod -R 777 /package
+
+CMD ["cp", "-avr", "/package", "/mnt/"]
