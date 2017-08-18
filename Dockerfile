@@ -41,8 +41,7 @@ RUN \
 	texi2html \
 	wget \
 	xz-utils \
-	yasm \
-	zlib1g-dev && \
+	yasm && \
  rm -rf \
 	/var/lib/apt/lists/*
 
@@ -61,6 +60,7 @@ ARG VIDSTAB_VER="1.1.0"
 ARG VPX_VER="1.6.1"
 ARG X265_VER="2.5"
 ARG ZIMG_VER="2.5.1"
+ARG ZLIB_VER="1.2.11"
 
 # environment variables
 ARG BUILD_ROOT="/tmp/build-root"
@@ -123,7 +123,10 @@ RUN \
 	https://github.com/webmproject/libvpx/archive/v${VPX_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/x265_${X265_VER}.tar.gz -L \
-	https://bitbucket.org/multicoreware/x265/downloads/x265_${X265_VER}.tar.gz
+	https://bitbucket.org/multicoreware/x265/downloads/x265_${X265_VER}.tar.gz && \
+curl -o \
+	${SOURCE_FOLDER}/v${ZLIB_VER}.tar.gz -L \
+	https://github.com/madler/zlib/archive/v${ZLIB_VER}.tar.gz
 
 # unpack source codes
 RUN \
@@ -237,6 +240,13 @@ RUN \
  cd ${BUILD_ROOT}/zimg-release-${ZIMG_VER} && \
  ./autogen.sh && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static && \
+ PATH="$HOME/bin:$PATH" make && \
+ make install
+
+# compile zlib
+RUN \
+ cd ${BUILD_ROOT}/zlib-${ZLIB_VER} && \
+ PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --static && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
