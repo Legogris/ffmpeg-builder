@@ -17,8 +17,11 @@ RUN \
 	libass-dev \
 	libfontconfig-dev \
 	libfreetype6-dev \
+	libopencore-amrnb-dev \
+	libopencore-amrwb-dev \
 	libsdl1.2-dev \
 	libspeex-dev \
+	libssl-dev \
 	libtheora-dev \
 	libtool \
 	libva-dev \
@@ -38,7 +41,8 @@ RUN \
 	texi2html \
 	wget \
 	xz-utils \
-	yasm && \
+	yasm \
+	zlib1g-dev && \
  rm -rf \
 	/var/lib/apt/lists/*
 
@@ -48,11 +52,8 @@ ARG FRIBIDI_VER="0.19.7"
 ARG HARFBUZZ_VER="1.4.8"
 ARG LAME_VER="3.99.5"
 ARG LIBASS_VER="0.13.7"
-ARG LIBOGG_VER="1.3.2"
 ARG NASM_VER="2.13.01"
-ARG O_AMR_VER="0.1.5"
 ARG OPENJPEG_VER="2.1.2"
-ARG OPENSSL_VER="1_0_2l"
 ARG OPUS_VER="1.2.1"
 ARG RTMP_COMMIT="fa8646daeb19dfd12c181f7d19de708d623704c0"
 ARG SOXR_VER="0.1.2"
@@ -60,7 +61,6 @@ ARG VIDSTAB_VER="1.1.0"
 ARG VPX_VER="1.6.1"
 ARG X265_VER="2.5"
 ARG ZIMG_VER="2.5.1"
-ARG ZLIB_VER="1.2.11"
 
 # environment variables
 ARG BUILD_ROOT="/tmp/build-root"
@@ -70,12 +70,11 @@ ARG SOURCE_FOLDER="/tmp/source-folder"
 RUN \
  mkdir -p \
 	${BUILD_ROOT} \
-	${SOURCE_FOLDER} && \
- rm -rf ${BUILD_ROOT}/* \
-	${SOURCE_FOLDER}/*
+	${SOURCE_FOLDER}
 
 # fetch source codes
 RUN \
+ LAME_BRANCH=${LAME_VER%.*} && \
  RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
  curl -o \
 	${SOURCE_FOLDER}/fdk-aac.tar.gz -L \
@@ -91,16 +90,13 @@ RUN \
 	https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-${HARFBUZZ_VER}.tar.bz2 && \
  curl -o \
 	${SOURCE_FOLDER}/lame-${LAME_VER}.tar.gz -L \
-	http://downloads.sourceforge.net/project/lame/lame/${LAME_VER%.*}/lame-${LAME_VER}.tar.gz && \
+	http://downloads.sourceforge.net/project/lame/lame/${LAME_BRANCH}/lame-${LAME_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/last_x264.tar.bz2 -L \
 	http://download.videolan.org/pub/x264/snapshots/last_x264.tar.bz2 && \
  curl -o \
 	${SOURCE_FOLDER}/${LIBASS_VER}.tar.gz -L \
 	https://github.com/libass/libass/archive/${LIBASS_VER}.tar.gz && \
- curl -o \
-	${SOURCE_FOLDER}/libogg-${LIBOGG_VER}.tar.gz -L \
-	http://downloads.xiph.org/releases/ogg/libogg-${LIBOGG_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/nasm-${NASM_VER}.tar.bz2 -L \
 	http://www.nasm.us/pub/nasm/releasebuilds/${NASM_VER}/nasm-${NASM_VER}.tar.bz2 && \
@@ -127,16 +123,7 @@ RUN \
 	https://github.com/webmproject/libvpx/archive/v${VPX_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/x265_${X265_VER}.tar.gz -L \
-	https://bitbucket.org/multicoreware/x265/downloads/x265_${X265_VER}.tar.gz && \
- curl -o \
-	${SOURCE_FOLDER}/v${ZLIB_VER}.tar.gz -L \
-	https://github.com/madler/zlib/archive/v${ZLIB_VER}.tar.gz && \
- curl -o \
-	${SOURCE_FOLDER}/OpenSSL_${OPENSSL_VER}.tar.gz -L \
-	https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VER}.tar.gz && \
- curl -o \
-	${SOURCE_FOLDER}/opencore-amr-${O_AMR_VER}.tar.gz -L \
-	http://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-${O_AMR_VER}.tar.gz
+	https://bitbucket.org/multicoreware/x265/downloads/x265_${X265_VER}.tar.gz
 
 # unpack source codes
 RUN \
@@ -147,27 +134,6 @@ RUN \
  cd ${BUILD_ROOT}/nasm-${NASM_VER} && \
  ./autogen.sh && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
- PATH="$HOME/bin:$PATH" make && \
- make install
-
-# compile zlib
-RUN \
- cd ${BUILD_ROOT}/zlib-${ZLIB_VER} && \
- PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --static && \
- PATH="$HOME/bin:$PATH" make && \
- make install
-
-# compile openssl
-RUN \
- cd ${BUILD_ROOT}/openssl-OpenSSL_${OPENSSL_VER} && \
- PATH="$HOME/bin:$PATH" ./config no-shared no-idea no-mdc2 no-rc5 --prefix="$HOME/ffmpeg_build" && \
- PATH="$HOME/bin:$PATH" make depend && make && \
- make install_sw
-
-# compile libogg
-RUN \
- cd ${BUILD_ROOT}/libogg-${LIBOGG_VER} && \
- PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
@@ -229,13 +195,6 @@ RUN \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
-# compile opencore-amr
-RUN \
- cd ${BUILD_ROOT}/opencore-amr-${O_AMR_VER} && \
- PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
- PATH="$HOME/bin:$PATH" make && \
- make install
-
 # compile libvpx
 RUN \
  cd ${BUILD_ROOT}/libvpx-${VPX_VER} && \
@@ -248,7 +207,7 @@ RUN \
  RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
  cd ${BUILD_ROOT}/rtmpdump-${RTMP_VER} && \
  sed -i "s#prefix=.*#prefix=$HOME/ffmpeg_build#" ./Makefile && \
- PATH="$HOME/bin:$PATH" make SHARED= XCFLAGS=-I"$HOME/ffmpeg_build/include" XLDFLAGS=-L"$HOME/ffmpeg_build/lib" XLIBS=-ldl && \
+ PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile soxr
@@ -280,7 +239,6 @@ RUN \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static && \
  PATH="$HOME/bin:$PATH" make && \
  make install
-
 
 # compile ffmpeg
 RUN \
