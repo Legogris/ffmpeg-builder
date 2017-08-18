@@ -135,7 +135,7 @@ RUN \
 	https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/opencore-amr-${O_AMR_VER}.tar.gz -L \
-	http://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-${OPENSSL_VER}.tar.gz
+	http://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-${O_AMR_VER}.tar.gz
 
 # unpack source codes
 RUN \
