@@ -140,6 +140,13 @@ RUN \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
+# compile zlib
+RUN \
+ cd ${BUILD_ROOT}/zlib-${ZLIB_VER} && \
+ PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --static && \
+ PATH="$HOME/bin:$PATH" make && \
+ make install
+
 # compile x264
 RUN \
  cd ${BUILD_ROOT}/x264-snapshot* && \
@@ -243,12 +250,6 @@ RUN \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
-# compile zlib
-RUN \
- cd ${BUILD_ROOT}/zlib-${ZLIB_VER} && \
- PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --static && \
- PATH="$HOME/bin:$PATH" make && \
- make install
 
 # compile ffmpeg
 RUN \
