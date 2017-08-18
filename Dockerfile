@@ -17,8 +17,6 @@ RUN \
 	libass-dev \
 	libfontconfig-dev \
 	libfreetype6-dev \
-	libopencore-amrnb-dev \
-	libopencore-amrwb-dev \
 	libsdl1.2-dev \
 	libspeex-dev \
 	libtheora-dev \
@@ -51,6 +49,7 @@ ARG HARFBUZZ_VER="1.4.8"
 ARG LAME_VER="3.99.5"
 ARG LIBASS_VER="0.13.7"
 ARG NASM_VER="2.13.01"
+ARG O_AMR_VER="0.1.5"
 ARG OPENJPEG_VER="2.1.2"
 ARG OPENSSL_VER="1_0_2l"
 ARG OPUS_VER="1.2.1"
@@ -130,7 +129,11 @@ curl -o \
 
 curl -o \
 	${SOURCE_FOLDER}/OpenSSL_${OPENSSL_VER}.tar.gz -L \
-	https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VER}.tar.gz
+	https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VER}.tar.gz && \
+
+curl -o \
+	${SOURCE_FOLDER}/opencore-amr-${O_AMR_VER}.tar.gz -L \
+	http://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-${OPENSSL_VER}.tar.gz
 
 # unpack source codes
 RUN \
@@ -212,6 +215,13 @@ RUN \
 # compile opus
 RUN \
  cd ${BUILD_ROOT}/opus-${OPUS_VER} && \
+ PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
+ PATH="$HOME/bin:$PATH" make && \
+ make install
+
+# compile opencore-amr
+RUN \
+ cd ${BUILD_ROOT}/opencore-amr-${O_AMR_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
  PATH="$HOME/bin:$PATH" make && \
  make install
