@@ -99,7 +99,7 @@ RUN \
 	https://github.com/libass/libass/archive/${LIBASS_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/libogg-${LIBOGG_VER}.tar.gz -L \
-	http://downloads.xiph.org/releases/ogg/libogg-${LIBASS_VER}.tar.gz && \
+	http://downloads.xiph.org/releases/ogg/libogg-${LIBOGG_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/nasm-${NASM_VER}.tar.bz2 -L \
 	http://www.nasm.us/pub/nasm/releasebuilds/${NASM_VER}/nasm-${NASM_VER}.tar.bz2 && \
