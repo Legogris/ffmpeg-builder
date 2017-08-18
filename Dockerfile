@@ -70,11 +70,12 @@ ARG SOURCE_FOLDER="/tmp/source-folder"
 RUN \
  mkdir -p \
 	${BUILD_ROOT} \
-	${SOURCE_FOLDER}
+	${SOURCE_FOLDER} && \
+ rm -rf ${BUILD_ROOT}/* \
+	${SOURCE_FOLDER}/*
 
 # fetch source codes
 RUN \
- LAME_BRANCH=${LAME_VER%.*} && \
  RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
  curl -o \
 	${SOURCE_FOLDER}/fdk-aac.tar.gz -L \
@@ -90,7 +91,7 @@ RUN \
 	https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-${HARFBUZZ_VER}.tar.bz2 && \
  curl -o \
 	${SOURCE_FOLDER}/lame-${LAME_VER}.tar.gz -L \
-	http://downloads.sourceforge.net/project/lame/lame/${LAME_BRANCH}/lame-${LAME_VER}.tar.gz && \
+	http://downloads.sourceforge.net/project/lame/lame/${LAME_VER%.*}/lame-${LAME_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/last_x264.tar.bz2 -L \
 	http://download.videolan.org/pub/x264/snapshots/last_x264.tar.bz2 && \
