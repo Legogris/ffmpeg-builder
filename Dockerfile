@@ -21,7 +21,6 @@ RUN \
 	libopencore-amrwb-dev \
 	libsdl1.2-dev \
 	libspeex-dev \
-	libssl-dev \
 	libtheora-dev \
 	libtool \
 	libva-dev \
@@ -53,6 +52,7 @@ ARG LAME_VER="3.99.5"
 ARG LIBASS_VER="0.13.7"
 ARG NASM_VER="2.13.01"
 ARG OPENJPEG_VER="2.1.2"
+ARG OPENSSL_VER="1_0_2l"
 ARG OPUS_VER="1.2.1"
 ARG RTMP_COMMIT="fa8646daeb19dfd12c181f7d19de708d623704c0"
 ARG SOXR_VER="0.1.2"
@@ -126,7 +126,11 @@ RUN \
 	https://bitbucket.org/multicoreware/x265/downloads/x265_${X265_VER}.tar.gz && \
 curl -o \
 	${SOURCE_FOLDER}/v${ZLIB_VER}.tar.gz -L \
-	https://github.com/madler/zlib/archive/v${ZLIB_VER}.tar.gz
+	https://github.com/madler/zlib/archive/v${ZLIB_VER}.tar.gz && \
+
+curl -o \
+	${SOURCE_FOLDER}/OpenSSL_${OPENSSL_VER}.tar.gz -L \
+	https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VER}.tar.gz
 
 # unpack source codes
 RUN \
@@ -146,6 +150,13 @@ RUN \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --static && \
  PATH="$HOME/bin:$PATH" make && \
  make install
+
+# compile openssl
+RUN \
+ cd ${BUILD_ROOT}/openssl-OpenSSL_${OPENSSL_VER} && \
+ PATH="$HOME/bin:$PATH" ./config no-shared no-idea no-mdc2 no-rc5 --prefix="$HOME/ffmpeg_build" && \
+ PATH="$HOME/bin:$PATH" make depend && make && \
+ make install_sw
 
 # compile x264
 RUN \
