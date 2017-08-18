@@ -48,6 +48,7 @@ ARG FRIBIDI_VER="0.19.7"
 ARG HARFBUZZ_VER="1.4.8"
 ARG LAME_VER="3.99.5"
 ARG LIBASS_VER="0.13.7"
+ARG LIBOGG_VER="1.3.2"
 ARG NASM_VER="2.13.01"
 ARG O_AMR_VER="0.1.5"
 ARG OPENJPEG_VER="2.1.2"
@@ -97,6 +98,9 @@ RUN \
 	${SOURCE_FOLDER}/${LIBASS_VER}.tar.gz -L \
 	https://github.com/libass/libass/archive/${LIBASS_VER}.tar.gz && \
  curl -o \
+	${SOURCE_FOLDER}/libogg-${LIBOGG_VER}.tar.gz -L \
+	http://downloads.xiph.org/releases/ogg/libogg-${LIBASS_VER}.tar.gz && \
+ curl -o \
 	${SOURCE_FOLDER}/nasm-${NASM_VER}.tar.bz2 -L \
 	http://www.nasm.us/pub/nasm/releasebuilds/${NASM_VER}/nasm-${NASM_VER}.tar.bz2 && \
  curl -o \
@@ -123,15 +127,13 @@ RUN \
  curl -o \
 	${SOURCE_FOLDER}/x265_${X265_VER}.tar.gz -L \
 	https://bitbucket.org/multicoreware/x265/downloads/x265_${X265_VER}.tar.gz && \
-curl -o \
+ curl -o \
 	${SOURCE_FOLDER}/v${ZLIB_VER}.tar.gz -L \
 	https://github.com/madler/zlib/archive/v${ZLIB_VER}.tar.gz && \
-
-curl -o \
+ curl -o \
 	${SOURCE_FOLDER}/OpenSSL_${OPENSSL_VER}.tar.gz -L \
 	https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VER}.tar.gz && \
-
-curl -o \
+ curl -o \
 	${SOURCE_FOLDER}/opencore-amr-${O_AMR_VER}.tar.gz -L \
 	http://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-${OPENSSL_VER}.tar.gz
 
@@ -160,6 +162,13 @@ RUN \
  PATH="$HOME/bin:$PATH" ./config no-shared no-idea no-mdc2 no-rc5 --prefix="$HOME/ffmpeg_build" && \
  PATH="$HOME/bin:$PATH" make depend && make && \
  make install_sw
+
+# compile libogg
+RUN \
+ cd ${BUILD_ROOT}/libogg-${LIBOGG_VER} && \
+ PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
+ PATH="$HOME/bin:$PATH" make && \
+ make install
 
 # compile x264
 RUN \
