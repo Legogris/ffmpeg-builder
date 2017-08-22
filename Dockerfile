@@ -16,7 +16,6 @@ RUN \
 	gawk \
 	libass-dev \
 	libfontconfig-dev \
-	libfreetype6-dev \
 	libsdl1.2-dev \
 	libspeex-dev \
 	libtheora-dev \
@@ -44,6 +43,7 @@ RUN \
 
 # package versions
 ARG FFMPEG_VER="3.3.3"
+ARG FREETYPE_VER="2.7.1"
 ARG FRIBIDI_VER="0.19.7"
 ARG HARFBUZZ_VER="1.4.8"
 ARG LAME_VER="3.99.5"
@@ -83,6 +83,9 @@ RUN \
  curl -o \
 	${SOURCE_FOLDER}/ffmpeg.tar.bz2 -L \
 	http://ffmpeg.org/releases/ffmpeg-${FFMPEG_VER}.tar.bz2 && \
+ curl -o \
+	${SOURCE_FOLDER}/freetype-${FREETYPE_VER}.tar.gz -L \
+	http://download.savannah.gnu.org/releases/freetype/freetype-${FREETYPE_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/fribidi-${FRIBIDI_VER}.tar.bz2 -L \
 	http://fribidi.org/download/fribidi-${FRIBIDI_VER}.tar.bz2 && \
@@ -199,6 +202,12 @@ RUN \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static && \
  PATH="$HOME/bin:$PATH" make && \
  make install
+
+# compile freetype
+RUN \
+ cd ${BUILD_ROOT}/freetype-${FREETYPE_VER} && \
+ ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static --without-png
+ make install && ln -s "$HOME/ffmpeg_build"/include/freetype2 "$HOME/ffmpeg_build"/include/freetype2/freetype
 
 # compile fribidi
 RUN \
