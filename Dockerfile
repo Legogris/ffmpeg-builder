@@ -206,7 +206,7 @@ RUN \
 # compile freetype
 RUN \
  cd ${BUILD_ROOT}/freetype-${FREETYPE_VER} && \
- ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static --without-png
+ ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static --without-png && \
  make install && ln -s "$HOME/ffmpeg_build"/include/freetype2 "$HOME/ffmpeg_build"/include/freetype2/freetype
 
 # compile fribidi
