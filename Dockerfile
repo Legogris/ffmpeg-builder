@@ -257,7 +257,7 @@ RUN \
  RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
  cd ${BUILD_ROOT}/rtmpdump-${RTMP_VER} && \
  sed -i "s#prefix=.*#prefix=$HOME/ffmpeg_build#" ./Makefile && \
- PATH="$HOME/bin:$PATH" make SHARED= XCFLAGS=-I"$HOME/ffmpeg_build/include" XLDFLAGS=-L"$HOME/ffmpeg_build/lib" XLIBS=-ldl && \
+ PATH="$HOME/bin:$PATH" make SHARED= XCFLAGS="-fpic -I$HOME/ffmpeg_build/include" XLDFLAGS=-L"$HOME/ffmpeg_build/lib" XLIBS=-ldl && \
  make install
 
 # compile soxr
