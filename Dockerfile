@@ -51,7 +51,7 @@ ARG LIBASS_VER="0.13.7"
 ARG LIBOGG_VER="1.3.2"
 ARG NASM_VER="2.13.01"
 ARG O_AMR_VER="0.1.5"
-ARG OPENJPEG_VER="2.1.2"
+ARG OPENJPEG_VER="2.2.0"
 ARG OPENSSL_VER="1.0.2l"
 ARG OPUS_VER="1.2.1"
 ARG RTMP_COMMIT="fa8646daeb19dfd12c181f7d19de708d623704c0"
@@ -65,6 +65,9 @@ ARG ZLIB_VER="1.2.11"
 # environment variables
 ARG BUILD_ROOT="/tmp/build-root"
 ARG SOURCE_FOLDER="/tmp/source-folder"
+
+# copy patches
+COPY patches/ /tmp/patches/
 
 # make folders
 RUN \
@@ -297,6 +300,7 @@ RUN set -ex && \
 # compile ffmpeg
 RUN set -ex && \
  cd ${BUILD_ROOT}/ffmpeg* && \
+ patch -p1 -i /tmp/patches/openjpeg-2.2.patch && \
  PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
 	--bindir="$HOME/bin" \
 	--enable-ffplay \
