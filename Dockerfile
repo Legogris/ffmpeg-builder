@@ -52,7 +52,7 @@ ARG LIBOGG_VER="1.3.2"
 ARG NASM_VER="2.13.01"
 ARG O_AMR_VER="0.1.5"
 ARG OPENJPEG_VER="2.1.2"
-ARG OPENSSL_VER="1.1.0f"
+ARG OPENSSL_VER="1.0.2l"
 ARG OPUS_VER="1.2.1"
 ARG RTMP_COMMIT="fa8646daeb19dfd12c181f7d19de708d623704c0"
 ARG SOXR_VER="0.1.2"
@@ -259,12 +259,11 @@ RUN \
  make install
 
 # compile rtmp
-#RUN \
-# RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
-# cd ${BUILD_ROOT}/rtmpdump-${RTMP_VER} && \
-# sed -i "s#prefix=.*#prefix=$HOME/ffmpeg_build#" ./Makefile && \
-# make SHARED= XCFLAGS="-fpic" XLIBS=-ldl && \
-# make install
+RUN \
+ RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
+ cd ${BUILD_ROOT}/rtmpdump-${RTMP_VER} && \
+ PATH="$HOME/bin:$PATH" make SYS=posix SHARED= XCFLAGS="-fpic -I$HOME/ffmpeg_build/include" XLDFLAGS=-L"$HOME/ffmpeg_build/lib" XLIBS=-ldl && \
+ make install prefix=$HOME/ffmpeg_build SHARED=
 
 # compile soxr
 RUN \
