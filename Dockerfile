@@ -45,7 +45,7 @@ RUN \
 ARG FFMPEG_VER="3.3.3"
 ARG FREETYPE_VER="2.7.1"
 ARG FRIBIDI_VER="0.19.7"
-ARG HARFBUZZ_VER="1.4.8"
+ARG HARFBUZZ_VER="1.5.0"
 ARG LAME_VER="3.99.5"
 ARG LIBASS_VER="0.13.7"
 ARG LIBOGG_VER="1.3.2"
@@ -59,7 +59,7 @@ ARG SOXR_VER="0.1.2"
 ARG VIDSTAB_VER="1.1.0"
 ARG VPX_VER="1.6.1"
 ARG X265_VER="2.5"
-ARG ZIMG_VER="2.5.1"
+ARG ZIMG_VER="2.6a"
 ARG ZLIB_VER="1.2.11"
 
 # environment variables
@@ -75,7 +75,7 @@ RUN \
 	${SOURCE_FOLDER}/*
 
 # fetch source codes
-RUN \
+RUN set -ex && \
  RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
  curl -o \
 	${SOURCE_FOLDER}/fdk-aac.tar.gz -L \
@@ -142,12 +142,11 @@ RUN \
 	http://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-${O_AMR_VER}.tar.gz
 
 # unpack source codes
-RUN \
- set -ex && \
+RUN set -ex && \
  for file in ${SOURCE_FOLDER}/* ; do tar xvf $file -C ${BUILD_ROOT} ; done
 
 # compile nasm
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/nasm-${NASM_VER} && \
  ./autogen.sh && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" && \
@@ -155,14 +154,14 @@ RUN \
  make install
 
 # compile zlib
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/zlib-${ZLIB_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --static && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile openssl
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/openssl-${OPENSSL_VER} && \
  PATH="$HOME/bin:$PATH" ./config \
 	no-shared \
@@ -174,28 +173,28 @@ RUN \
  make install
 
 # compile libogg
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/libogg-${LIBOGG_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile x264
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/x264-snapshot* && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --disable-opencl && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile x265
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/x265_${X265_VER}/build/linux && \
  PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED:bool=off ../../source && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile libfdk-aac
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/mstorsjo-fdk-aac* && \
  autoreconf -fiv && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
@@ -203,27 +202,27 @@ RUN \
  make install
 
 # compile harfbuzz
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/harfbuzz-${HARFBUZZ_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile freetype
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/freetype-${FREETYPE_VER} && \
  ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static --without-png && \
  make install && ln -s "$HOME/ffmpeg_build"/include/freetype2 "$HOME/ffmpeg_build"/include/freetype2/freetype
 
 # compile fribidi
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/fribidi-${FRIBIDI_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile libass
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/libass-${LIBASS_VER} && \
  ./autogen.sh && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
@@ -231,49 +230,49 @@ RUN \
  make install
 
 # compile lame
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/lame-${LAME_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --enable-nasm --disable-shared && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile opus
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/opus-${OPUS_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile opencore-amr
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/opencore-amr-${O_AMR_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile libvpx
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/libvpx-${VPX_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-pic && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile rtmp
-RUN \
+RUN set -ex && \
  RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
  cd ${BUILD_ROOT}/rtmpdump-${RTMP_VER} && \
  PATH="$HOME/bin:$PATH" make SYS=posix SHARED= XCFLAGS="-fpic -I$HOME/ffmpeg_build/include" XLDFLAGS=-L"$HOME/ffmpeg_build/lib" XLIBS=-ldl && \
  make install prefix=$HOME/ffmpeg_build SHARED=
 
 # compile soxr
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/soxr-${SOXR_VER}-Source && \
  PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DBUILD_SHARED_LIBS:bool=off -DWITH_OPENMP:bool=off -DBUILD_TESTS:bool=off && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile vidstab
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/vid.stab-${VIDSTAB_VER} && \
  sed -i "s/BUILD_SHARED_LIBS/BUILD_STATIC_LIBS/" ./CMakeLists.txt && \
  PATH="$HOME/bin:$PATH" cmake -DCMAKE_INSTALL_PREFIX:PATH="$HOME/ffmpeg_build" && \
@@ -281,14 +280,14 @@ RUN \
  make install
 
 # compile openjpeg
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/openjpeg-${OPENJPEG_VER} && \
  PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DBUILD_SHARED_LIBS:bool=off -DBUILD_THIRDPARTY=on && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
 # compile zimg
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/zimg-release-${ZIMG_VER} && \
  ./autogen.sh && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static && \
@@ -296,7 +295,7 @@ RUN \
  make install
 
 # compile ffmpeg
-RUN \
+RUN set -ex && \
  cd ${BUILD_ROOT}/ffmpeg* && \
  PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
 	--bindir="$HOME/bin" \
