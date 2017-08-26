@@ -52,7 +52,7 @@ ARG LIBOGG_VER="1.3.2"
 ARG NASM_VER="2.13.01"
 ARG O_AMR_VER="0.1.5"
 ARG OPENJPEG_VER="2.1.2"
-ARG OPENSSL_VER="1_0_2l"
+ARG OPENSSL_VER="1.1.0f"
 ARG OPUS_VER="1.2.1"
 ARG RTMP_COMMIT="fa8646daeb19dfd12c181f7d19de708d623704c0"
 ARG SOXR_VER="0.1.2"
@@ -135,15 +135,16 @@ RUN \
 	${SOURCE_FOLDER}/v${ZLIB_VER}.tar.gz -L \
 	https://github.com/madler/zlib/archive/v${ZLIB_VER}.tar.gz && \
  curl -o \
-	${SOURCE_FOLDER}/OpenSSL_${OPENSSL_VER}.tar.gz -L \
-	https://github.com/openssl/openssl/archive/OpenSSL_${OPENSSL_VER}.tar.gz && \
+	${SOURCE_FOLDER}/openssl-${OPENSSL_VER}.tar.gz -L \
+	https://www.openssl.org/source/openssl-${OPENSSL_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/opencore-amr-${O_AMR_VER}.tar.gz -L \
 	http://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-${O_AMR_VER}.tar.gz
 
 # unpack source codes
 RUN \
- for file in ${SOURCE_FOLDER}/* ; do tar xf $file -C ${BUILD_ROOT} ; done
+ set -ex && \
+ for file in ${SOURCE_FOLDER}/* ; do tar xvf $file -C ${BUILD_ROOT} ; done
 
 # compile nasm
 RUN \
@@ -162,10 +163,15 @@ RUN \
 
 # compile openssl
 RUN \
- cd ${BUILD_ROOT}/openssl-OpenSSL_${OPENSSL_VER} && \
- PATH="$HOME/bin:$PATH" ./config no-shared no-idea no-mdc2 no-rc5 --prefix="$HOME/ffmpeg_build" && \
- PATH="$HOME/bin:$PATH" make depend && make && \
- make install_sw
+ cd ${BUILD_ROOT}/openssl-${OPENSSL_VER} && \
+ PATH="$HOME/bin:$PATH" ./config \
+	no-shared \
+	zlib \
+	--openssldir="$HOME/ffmpeg_build/etc/ssl" \
+	--prefix="$HOME/ffmpeg_build" && \
+ PATH="$HOME/bin:$PATH" make depend && \
+ PATH="$HOME/bin:$PATH" make && \
+ make install
 
 # compile libogg
 RUN \
@@ -253,12 +259,12 @@ RUN \
  make install
 
 # compile rtmp
-RUN \
- RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
- cd ${BUILD_ROOT}/rtmpdump-${RTMP_VER} && \
- sed -i "s#prefix=.*#prefix=$HOME/ffmpeg_build#" ./Makefile && \
- PATH="$HOME/bin:$PATH" make SHARED= XCFLAGS="-fpic -I$HOME/ffmpeg_build/include" XLDFLAGS=-L"$HOME/ffmpeg_build/lib" XLIBS=-ldl && \
- make install
+#RUN \
+# RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
+# cd ${BUILD_ROOT}/rtmpdump-${RTMP_VER} && \
+# sed -i "s#prefix=.*#prefix=$HOME/ffmpeg_build#" ./Makefile && \
+# make SHARED= XCFLAGS="-fpic" XLIBS=-ldl && \
+# make install
 
 # compile soxr
 RUN \
@@ -289,7 +295,6 @@ RUN \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-static && \
  PATH="$HOME/bin:$PATH" make && \
  make install
-
 
 # compile ffmpeg
 RUN \
