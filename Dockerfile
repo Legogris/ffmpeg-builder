@@ -14,7 +14,6 @@ RUN \
 	curl \
 	frei0r-plugins-dev \
 	gawk \
-	libass-dev \
 	libfontconfig-dev \
 	libsdl1.2-dev \
 	libtool \
