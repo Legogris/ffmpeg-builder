@@ -17,7 +17,6 @@ RUN \
 	libass-dev \
 	libfontconfig-dev \
 	libsdl1.2-dev \
-	libtheora-dev \
 	libtool \
 	libva-dev \
 	libvdpau-dev \
@@ -47,6 +46,7 @@ ARG HARFBUZZ_VER="1.5.0"
 ARG LAME_VER="3.99.5"
 ARG LIBASS_VER="0.13.7"
 ARG LIBOGG_VER="1.3.2"
+ARG LIBTHEORA_VER="1.2.0alpha1"
 ARG LIBVORBIS_VER="1.3.5"
 ARG NASM_VER="2.13.01"
 ARG O_AMR_VER="0.1.5"
@@ -107,6 +107,9 @@ RUN set -ex && \
  curl -o \
 	${SOURCE_FOLDER}/libogg-${LIBOGG_VER}.tar.gz -L \
 	http://downloads.xiph.org/releases/ogg/libogg-${LIBOGG_VER}.tar.gz && \
+curl -o \
+	${SOURCE_FOLDER}/libtheora-${LIBTHEORA_VER}.tar.gz -L \
+	http://downloads.xiph.org/releases/theora/libtheora-${LIBTHEORA_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/libvorbis-${LIBVORBIS_VER}.tar.gz -L \
 	http://downloads.xiph.org/releases/vorbis/libvorbis-${LIBVORBIS_VER}.tar.gz && \
@@ -188,17 +191,24 @@ RUN set -ex && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
-#compile speex
+# compile speex
 RUN set -ex && \
  cd ${BUILD_ROOT}/speex-${SPEEX_VER} && \
  ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-sse  --disable-oggtest --with-ogg="$HOME/ffmpeg_build" && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
-#compile libvorbis
+# compile libvorbis
 RUN set -ex && \
  cd ${BUILD_ROOT}/libvorbis-${LIBVORBIS_VER} && \
  ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --disable-oggtest && \
+ PATH="$HOME/bin:$PATH" make && \
+ make install
+
+# compile libtheora
+RUN set -ex && \
+ cd ${BUILD_ROOT}/libtheora-${LIBTHEORA_VER} && \
+ ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --disable-oggtest --disable-examples --with-ogg="$HOME/ffmpeg_build" && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
