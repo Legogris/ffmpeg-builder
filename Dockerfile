@@ -188,7 +188,7 @@ RUN set -ex && \
 #compile speex
 RUN set -ex && \
  cd ${BUILD_ROOT}/speex-${SPEEX_VER} && \
- ./configure --prefix=${BUILD_ROOT} --disable-shared --enable-sse  --disable-oggtest --with-ogg=${BUILD_ROOT} && \
+ ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-sse  --disable-oggtest --with-ogg="$HOME/ffmpeg_build" && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
