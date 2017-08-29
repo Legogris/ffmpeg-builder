@@ -17,7 +17,6 @@ RUN \
 	libass-dev \
 	libfontconfig-dev \
 	libsdl1.2-dev \
-	libspeex-dev \
 	libtheora-dev \
 	libtool \
 	libva-dev \
@@ -56,6 +55,7 @@ ARG OPENSSL_VER="1.0.2l"
 ARG OPUS_VER="1.2.1"
 ARG RTMP_COMMIT="fa8646daeb19dfd12c181f7d19de708d623704c0"
 ARG SOXR_VER="0.1.2"
+ARG SPEEX_VER="1.2.0"
 ARG VIDSTAB_VER="1.1.0"
 ARG VPX_VER="1.6.1"
 ARG X265_VER="2.5"
@@ -123,6 +123,9 @@ RUN set -ex && \
 	${SOURCE_FOLDER}/soxr-${SOXR_VER}-Source.tar.xz -L \
 	https://sourceforge.net/projects/soxr/files/soxr-${SOXR_VER}-Source.tar.xz && \
  curl -o \
+	${SOURCE_FOLDER}/speex-${SPEEX_VER}.tar.gz -L \
+	http://downloads.us.xiph.org/releases/speex/speex-${SPEEX_VER}.tar.gz && \
+ curl -o \
 	${SOURCE_FOLDER}/v${OPENJPEG_VER}.tar.gz -L \
 	https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VER}.tar.gz && \
  curl -o \
@@ -179,6 +182,13 @@ RUN set -ex && \
 RUN set -ex && \
  cd ${BUILD_ROOT}/libogg-${LIBOGG_VER} && \
  PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && \
+ PATH="$HOME/bin:$PATH" make && \
+ make install
+
+#compile speex
+RUN set -ex && \
+ cd ${BUILD_ROOT}/speex-${SPEEX_VER} && \
+ ./configure --prefix=${BUILD_ROOT} --disable-shared --enable-sse  --disable-oggtest --with-ogg=${BUILD_ROOT} && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
