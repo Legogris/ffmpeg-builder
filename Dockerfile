@@ -22,7 +22,6 @@ RUN \
 	libva-dev \
 	libvdpau-dev \
 	libvo-amrwbenc-dev \
-	libvorbis-dev \
 	libwebp-dev \
 	libxcb1-dev \
 	libxcb-shm0-dev \
@@ -48,6 +47,7 @@ ARG HARFBUZZ_VER="1.5.0"
 ARG LAME_VER="3.99.5"
 ARG LIBASS_VER="0.13.7"
 ARG LIBOGG_VER="1.3.2"
+ARG LIBVORBIS_VER="1.3.5"
 ARG NASM_VER="2.13.01"
 ARG O_AMR_VER="0.1.5"
 ARG OPENJPEG_VER="2.2.0"
@@ -107,6 +107,9 @@ RUN set -ex && \
  curl -o \
 	${SOURCE_FOLDER}/libogg-${LIBOGG_VER}.tar.gz -L \
 	http://downloads.xiph.org/releases/ogg/libogg-${LIBOGG_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/libvorbis-${LIBVORBIS_VER}.tar.gz -L \
+	http://downloads.xiph.org/releases/vorbis/libvorbis-${LIBVORBIS_VER}.tar.gz && \
  curl -o \
 	${SOURCE_FOLDER}/nasm-${NASM_VER}.tar.bz2 -L \
 	http://www.nasm.us/pub/nasm/releasebuilds/${NASM_VER}/nasm-${NASM_VER}.tar.bz2 && \
@@ -189,6 +192,13 @@ RUN set -ex && \
 RUN set -ex && \
  cd ${BUILD_ROOT}/speex-${SPEEX_VER} && \
  ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --enable-sse  --disable-oggtest --with-ogg="$HOME/ffmpeg_build" && \
+ PATH="$HOME/bin:$PATH" make && \
+ make install
+
+#compile libvorbis
+RUN set -ex && \
+ cd ${BUILD_ROOT}/libvorbis-${LIBVORBIS_VER} && \
+ ./configure --prefix="$HOME/ffmpeg_build" --disable-shared --disable-oggtest && \
  PATH="$HOME/bin:$PATH" make && \
  make install
 
