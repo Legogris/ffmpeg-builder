@@ -333,6 +333,7 @@ RUN set -ex && \
  patch -p1 -i /tmp/patches/openjpeg-2.2.patch && \
  PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
 	--bindir="$HOME/bin" \
+	--disable-doc \
 	--enable-ffplay \
 	--enable-ffserver \
 	--enable-fontconfig \
