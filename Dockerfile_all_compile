@@ -1,0 +1,409 @@
+FROM lsiodev/toolchain
+
+# package versions
+ARG FDK_AAC_VER="0.1.5"
+ARG FFMPEG_VER="3.3.3"
+ARG FONTCONFIG_VER="2.12.4"
+ARG FREETYPE_VER="2.8"
+ARG FREI0R_VER="1.6.1"
+ARG FRIBIDI_VER="0.19.7"
+ARG GIFLIB_VER="5.1.4"
+ARG HARFBUZZ_VER="1.5.0"
+ARG LAME_VER="3.99.5"
+ARG LCMS2_VER="2.8"
+ARG LIBASS_VER="0.13.7"
+ARG LIBJPEG_TURBO_VER="1.5.2"
+ARG LIBOGG_VER="1.3.2"
+ARG LIBPNG_VER="1.6.31"
+ARG LIBTIFF_VER="4.0.8"
+ARG LIBVORBIS_VER="1.3.5"
+ARG LIBWEBP_VER="0.6.0"
+ARG OPENJPEG_VER="2.2.0"
+ARG OPENSSL_VER="1.0.2l"
+ARG OPUS_VER="1.2.1"
+ARG RTMP_COMMIT="fa8646daeb19dfd12c181f7d19de708d623704c0"
+ARG X265_VER="2.5"
+ARG ZLIB_VER="1.2.11"
+
+# environment variables
+ARG BUILD_ROOT="/tmp/build-root"
+ARG SOURCE_FOLDER="/tmp/source-folder"
+
+# copy patches
+COPY patches/ /tmp/patches/
+
+# make folders
+RUN \
+ mkdir -p \
+	${BUILD_ROOT} \
+	${SOURCE_FOLDER} && \
+ rm -rf ${BUILD_ROOT}/* \
+	${SOURCE_FOLDER}/*
+
+RUN set -ex && \
+ RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
+ curl -o \
+	${SOURCE_FOLDER}/fdk-aac-${FDK_AAC_VER}.tar.gz -L \
+	https://downloads.sourceforge.net/opencore-amr/fdk-aac-${FDK_AAC_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/ffmpeg.tar.bz2 -L \
+	http://ffmpeg.org/releases/ffmpeg-${FFMPEG_VER}.tar.bz2 && \
+ curl -o \
+	${SOURCE_FOLDER}/fontconfig-${FONTCONFIG_VER}.tar.bz2 -L \
+	https://www.freedesktop.org/software/fontconfig/release/fontconfig-${FONTCONFIG_VER}.tar.bz2 && \
+ curl -o \
+	${SOURCE_FOLDER}/freetype-${FREETYPE_VER}.tar.bz2 -L \
+	https://downloads.sourceforge.net/freetype/freetype-${FREETYPE_VER}.tar.bz2 && \
+ curl -o \
+	${SOURCE_FOLDER}/frei0r-plugins-${FREI0R_VER}.tar.gz -L \
+	https://files.dyne.org/frei0r/releases/frei0r-plugins-${FREI0R_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/fribidi-${FRIBIDI_VER}.tar.bz2 -L \
+	http://fribidi.org/download/fribidi-${FRIBIDI_VER}.tar.bz2 && \
+ curl -o \
+	${SOURCE_FOLDER}/giflib-${GIFLIB_VER}.tar.bz2 -L \
+	https://downloads.sourceforge.net/giflib/giflib-${GIFLIB_VER}.tar.bz2 && \
+ curl -o \
+	${SOURCE_FOLDER}/harfbuzz-${HARFBUZZ_VER}.tar.bz2 -L \
+	https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-${HARFBUZZ_VER}.tar.bz2 && \
+ curl -o \
+	${SOURCE_FOLDER}/lame-${LAME_VER}.tar.gz -L \
+	http://downloads.sourceforge.net/project/lame/lame/${LAME_VER%.*}/lame-${LAME_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/lcms2-${LCMS2_VER}.tar.gz -L \
+	https://downloads.sourceforge.net/lcms/lcms2-${LCMS2_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/${LIBASS_VER}.tar.gz -L \
+	https://github.com/libass/libass/archive/${LIBASS_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/libjpeg-turbo-${LIBJPEG_TURBO_VER}.tar.gz -L \
+	https://downloads.sourceforge.net/libjpeg-turbo/libjpeg-turbo-${LIBJPEG_TURBO_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/libogg-${LIBOGG_VER}.tar.gz -L \
+	http://downloads.xiph.org/releases/ogg/libogg-${LIBOGG_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/libpng-${LIBPNG_VER}.tar.xz -L \
+	https://downloads.sourceforge.net/libpng/libpng-${LIBPNG_VER}.tar.xz && \
+ curl -o \
+	${SOURCE_FOLDER}/tiff-${LIBTIFF_VER}.tar.gz -L \
+	http://download.osgeo.org/libtiff/tiff-${LIBTIFF_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/libvorbis-${LIBVORBIS_VER}.tar.xz -L \
+	https://downloads.xiph.org/releases/vorbis/libvorbis-${LIBVORBIS_VER}.tar.xz && \
+ curl -o \
+	${SOURCE_FOLDER}/libwebp-0.6.0.tar.gz -L \
+	http://downloads.webmproject.org/releases/webp/libwebp-0.6.0.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/v${OPENJPEG_VER}.tar.gz -L \
+	https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/openssl-${OPENSSL_VER}.tar.gz -L \
+	https://www.openssl.org/source/openssl-${OPENSSL_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/opus-${OPUS_VER}.tar.gz -L \
+	https://archive.mozilla.org/pub/opus/opus-${OPUS_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/rtmpdump-${RTMP_VER}.tgz -L \
+	https://git.ffmpeg.org/gitweb/rtmpdump.git/snapshot/${RTMP_COMMIT}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/last_x264.tar.bz2 -L \
+	http://download.videolan.org/pub/x264/snapshots/last_x264.tar.bz2 && \
+ curl -o \
+	${SOURCE_FOLDER}/x265_${X265_VER}.tar.gz -L \
+	https://bitbucket.org/multicoreware/x265/downloads/x265_${X265_VER}.tar.gz && \
+ curl -o \
+	${SOURCE_FOLDER}/v${ZLIB_VER}.tar.gz -L \
+	https://github.com/madler/zlib/archive/v${ZLIB_VER}.tar.gz
+
+# unpack source codes
+RUN set -ex && \
+ for file in ${SOURCE_FOLDER}/* ; do tar xvf $file -C ${BUILD_ROOT} ; done
+
+# compile opus
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/opus-${OPUS_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile fdk-aac
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/fdk-aac-${FDK_AAC_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile libpng
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/libpng-${LIBPNG_VER} && \
+ LIBS=-lpthread ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile freetype 1st pass
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/freetype-${FREETYPE_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" \
+	--without-harfbuzz && \
+ make && \
+ make install && \
+ ln -s "$HOME/ffmpeg_build"/include/freetype2 "$HOME/ffmpeg_build"/include/freetype2/freetype
+
+# compile harfbuzz 1st pass
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/harfbuzz-${HARFBUZZ_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile freetype 2nd pass
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/freetype-${FREETYPE_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install && \
+ ln -s "$HOME/ffmpeg_build"/include/freetype2 "$HOME/ffmpeg_build"/include/freetype2/freetype
+
+# compile harfbuzz 2nd pass
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/harfbuzz-${HARFBUZZ_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile fontconfig
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/fontconfig-${FONTCONFIG_VER} && \
+ ./configure \
+	--disable-docs \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile fribidi
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/fribidi-${FRIBIDI_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile libass
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/libass-${LIBASS_VER} && \
+ ./autogen.sh && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile frei0r-plugins
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ mkdir -p \
+	${BUILD_ROOT}/frei0r-plugins-${FREI0R_VER}/build && \
+ cd ${BUILD_ROOT}/frei0r-plugins-${FREI0R_VER}/build && \
+ cmake -G "Unix Makefiles" \
+	-DBUILD_SHARED_LIBS=OFF \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" \
+	-Wno-dev .. && \
+ make && \
+ make install
+
+# compile libjpeg-turbo
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/libjpeg-turbo-${LIBJPEG_TURBO_VER}  && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" \
+	--with-jpeg8 && \
+ make && \
+ make install
+
+# compile libtiff
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/tiff-${LIBTIFF_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-jpeg \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" \
+	--with-jpeg-include-dir="$HOME/ffmpeg_build/include" \
+	--with-jpeg-lib-dir="$HOME/ffmpeg_build/lib" && \
+ make && \
+ make install
+
+# compile little cms2
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/lcms2-${LCMS2_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" \
+	--with-jpeg="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile openjpeg
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/openjpeg-${OPENJPEG_VER} && \
+ cmake -G "Unix Makefiles" \
+	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" \
+	-DBUILD_SHARED_LIBS:bool=off \
+	-DBUILD_THIRDPARTY=on && \
+ make && \
+ make install
+
+# compile zlib
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/zlib-${ZLIB_VER} && \
+ ./configure \
+	--prefix="$HOME/ffmpeg_build" \
+	--static && \
+ make && \
+ make install
+
+# compile giflib
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/giflib-${GIFLIB_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile libwebp
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/libwebp-0.6.0 && \
+ ac_cv_search_png_get_libpng_ver="none required" \
+ LIBPNG_CONFIG="$HOME/ffmpeg_build/bin/libpng-config" \
+ ./configure \
+	--disable-shared \
+	--enable-libwebpdecoder \
+	--enable-libwebpdemux \
+	--enable-libwebpextras \
+	--enable-libwebpmux \
+	--enable-static \
+	--enable-swap-16bit-csp \
+	--prefix="$HOME/ffmpeg_build" \
+	--with-gifincludedir="$HOME/ffmpeg_build/include" \
+	--with-giflibdir="$HOME/ffmpeg_build/lib" \
+	--with-jpegincludedir="$HOME/ffmpeg_build/include" \
+	--with-jpeglibdir="$HOME/ffmpeg_build/lib" \
+	--with-pkgconfigdir="$HOME/ffmpeg_build/lib/pkgconfig" \
+	--with-pngincludedir="$HOME/ffmpeg_build/include" \
+	--with-tiffincludedir="$HOME/ffmpeg_build/include" \
+	--with-tifflibdir="$HOME/ffmpeg_build/lib" && \
+ make && \
+ make install
+
+# compile openssl
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/openssl-${OPENSSL_VER} && \
+ ./config \
+	no-idea \
+	no-mdc2 \
+	no-rc5 \
+	no-shared \
+	--openssldir="$HOME/ffmpeg_build/etc/ssl" \
+	--prefix="$HOME/ffmpeg_build" \
+	zlib -I"$HOME/ffmpeg_build/include" -L"$HOME/ffmpeg_build/lib" && \
+ make depend && \
+ make && \
+ make install
+
+# compile rtmp
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
+ cd ${BUILD_ROOT}/rtmpdump-${RTMP_VER} && \
+ make \
+	SHARED= \
+	SYS=posix \
+	XCFLAGS="-fpic -I$HOME/ffmpeg_build/include" \
+	XLDFLAGS=-L"$HOME/ffmpeg_build/lib" \
+	XLIBS=-ldl && \
+ make install \
+	prefix=$HOME/ffmpeg_build \
+	SHARED=
+
+# compile libogg
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/libogg-${LIBOGG_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile libvorbis
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/libvorbis-${LIBVORBIS_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile lame
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/lame-${LAME_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-nasm \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile x264
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/x264-snapshot* && \
+ ./configure \
+	--disable-cli \
+	--disable-opencl \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile x265
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/x265_${X265_VER}/build/linux && \
+ cmake -G "Unix Makefiles" \
+	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" \
+	-DENABLE_SHARED:bool=off \
+	../../source && \
+ make && \
+ make install

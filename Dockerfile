@@ -329,7 +329,7 @@ RUN set -ex && \
 # compile ffmpeg
 RUN set -ex && \
  cd ${BUILD_ROOT}/ffmpeg* && \
- patch -p1 -i /tmp/patches/openjpeg-2.2.patch && \
+ for i in /tmp/patches/ffmpeg/*.patch; do patch -p1 -i $i; done && \
  PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
 	--bindir="$HOME/bin" \
 	--disable-doc \
