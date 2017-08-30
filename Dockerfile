@@ -65,7 +65,7 @@ https://downloads.sourceforge.net/libpng/libpng-${LIBPNG_VER}.tar.xz \
 https://downloads.xiph.org/releases/theora/libtheora-${LIBTHEORA_VER}.tar.xz \
 http://download.osgeo.org/libtiff/tiff-${LIBTIFF_VER}.tar.gz \
 https://downloads.xiph.org/releases/vorbis/libvorbis-${LIBVORBIS_VER}.tar.xz \
-http://storage.googleapis.com/downloads.webmproject.org/releases/webm/libvpx-${LIBVPX_VER}.tar.bz2 \
+https://github.com/webmproject/libvpx/archive/v${LIBVPX_VER}.tar.gz \
 http://downloads.webmproject.org/releases/webp/libwebp-${LIBWEBP_VER}.tar.gz \
 https://sourceforge.net/projects/opencore-amr/files/opencore-amr/opencore-amr-${OPENCORE_AMR_VER}.tar.gz/download \
 https://github.com/uclouvain/openjpeg/archive/v${OPENJPEG_VER}.tar.gz \
