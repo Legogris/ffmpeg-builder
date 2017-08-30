@@ -34,9 +34,12 @@ ARG RTMP_COMMIT="fa8646daeb19dfd12c181f7d19de708d623704c0"
 ARG SOXR_VER="0.1.2"
 ARG SPEEX_VER="1.2.0"
 ARG SPEEX_DSP_VER="1.2rc3"
+ARG VIDSTAB_VER="1.1.0"
+ARG VO_AMRWBENC_VER="0.1.3"
 ARG X264_VER="x264-snapshot-20170822-2245-stable"
 ARG X265_VER="2.5"
 ARG XVID_VER="1.3.4"
+ARG ZIMG_VER="2.5.1"
 ARG ZLIB_VER="1.2.11"
 
 # source url list
@@ -72,9 +75,12 @@ https://git.ffmpeg.org/gitweb/rtmpdump.git/snapshot/${RTMP_COMMIT}.tar.gz \
 https://sourceforge.net/projects/soxr/files/soxr-${SOXR_VER}-Source.tar.xz \
 https://downloads.xiph.org/releases/speex/speex-${SPEEX_VER}.tar.gz \
 https://downloads.xiph.org/releases/speex/speexdsp-${SPEEX_DSP_VER}.tar.gz \
+https://github.com/georgmartius/vid.stab/archive/v${VIDSTAB_VER}.tar.gz \
+https://sourceforge.net/projects/opencore-amr/files/vo-amrwbenc/vo-amrwbenc-${VO_AMRWBENC_VER}.tar.gz \
 https://download.videolan.org/x264/snapshots/${X264_VER}.tar.bz2 \
 https://bitbucket.org/multicoreware/x265/downloads/x265_${X265_VER}.tar.gz \
 http://downloads.xvid.org/downloads/xvidcore-${XVID_VER}.tar.gz \
+https://github.com/sekrit-twc/zimg/archive/release-${ZIMG_VER}.tar.gz \
 https://github.com/madler/zlib/archive/v${ZLIB_VER}.tar.gz"
 
 # environment variables
@@ -128,6 +134,16 @@ RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
 # compile opencore_amr
 RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/opencore-amr-${OPENCORE_AMR_VER} && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile vo-amrwbenc
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/vo-amrwbenc-${VO_AMRWBENC_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
@@ -445,6 +461,26 @@ RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
  make && \
  make install
 
+# compile zimg
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/zimg-release-${ZIMG_VER} && \
+ ./autogen.sh && \
+ ./configure \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
+# compile vidstab
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/vid.stab-${VIDSTAB_VER} && \
+ sed -i "s/BUILD_SHARED_LIBS/BUILD_STATIC_LIBS/" ./CMakeLists.txt && \
+ cmake -G "Unix Makefiles" \
+	-DCMAKE_INSTALL_PREFIX:PATH="$HOME/ffmpeg_build" && \
+ make && \
+ make install
+
 # compile x264
 RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/x264-snapshot* && \
@@ -468,11 +504,12 @@ RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
  make install
 
 # compile ffmpeg
-RUN set -ex && \
+RUN set -ex && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/ffmpeg* && \
  for i in /tmp/patches/ffmpeg/*.patch; do patch -p1 -i $i; done && \
- PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
+ ./configure \
 	--bindir="$HOME/bin" \
+	--disable-debug \
 	--disable-doc \
 	--enable-ffplay \
 	--enable-ffserver \
@@ -492,16 +529,17 @@ RUN set -ex && \
 	--enable-libsoxr \
 	--enable-libspeex \
 	--enable-libtheora \
-#	--enable-libvidstab \
-#	--enable-libvo-amrwbenc \
+	--enable-libvidstab \
+	--enable-libvo-amrwbenc \
 	--enable-libvorbis \
 	--enable-libvpx \
 	--enable-libwebp \
 	--enable-libx264 \
 	--enable-libx265 \
 	--enable-libxvid \
-#	--enable-libzimg \
+	--enable-libzimg \
 	--enable-nonfree \
+	--enable-openssl \
 	--enable-pic \
 #	--enable-vaapi \
 	--enable-version3 \
@@ -510,9 +548,8 @@ RUN set -ex && \
 	--extra-ldflags="-L$HOME/ffmpeg_build/lib" \
 	--pkg-config-flags="--static" \
 	--prefix="$HOME/ffmpeg_build" && \
- PATH="$HOME/bin:$PATH" make && \
- make install && \
- hash -r
+ make && \
+ make install
 
 # archive artefacts
 RUN \
