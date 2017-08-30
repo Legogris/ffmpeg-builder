@@ -113,14 +113,19 @@ RUN set -ex && \
 # attempt to set number of cores available and if 4 or more available set number for make to use
 # as one less than actual available, if 6 or more set to two less than available, otherwise use all cores
 RUN \
- CPU_CORES=$( < /proc/cpuinfo grep -c processor ) && \
+ CPU_CORES=$( < /proc/cpuinfo grep -c processor ) || echo "failed cpu look up" && \
+ if echo $CPU_CORES | grep -E  -q '^[0-9]+$'; then \
+        	: ; \
 	if [ "$CPU_CORES" -gt 7 ]; then \
 		CPU_CORES=$(( CPU_CORES  / 2 )); \
 	elif [ "$CPU_CORES" -gt 5 ]; then \
 		CPU_CORES=$(( CPU_CORES  - 2 )); \
 	elif [ "$CPU_CORES" -gt 3 ]; then \
 		CPU_CORES=$(( CPU_CORES  - 1 )); \
-        fi && \
+	fi; \
+ else CPU_CORES="1"; \
+ fi && \
+
  echo "$CPU_CORES" > /tmp/cpu-cores
 
 # compile xvid
