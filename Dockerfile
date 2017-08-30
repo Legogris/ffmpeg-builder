@@ -127,7 +127,6 @@ RUN set -ex && CPU_CORES=$(cat /tmp/cpu-cores) && export PKG_CONFIG_PATH="$HOME/
  ./configure \
 	--prefix="$HOME/ffmpeg_build" && \
  make -j $CPU_CORES && \
- sed -i '/libdir.*SHARED_LIB/ s/^/#/' Makefile && \
  make install
 
 # compile libvpx
@@ -331,7 +330,7 @@ RUN set -ex && CPU_CORES=$(cat /tmp/cpu-cores) && export PKG_CONFIG_PATH="$HOME/
  cd ${BUILD_ROOT}/openjpeg-${OPENJPEG_VER} && \
  cmake -G "Unix Makefiles" \
 	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" \
-	-DBUILD_SHARED_LIBS:bool=off \
+# 	-DBUILD_SHARED_LIBS:bool=off \
 	-DBUILD_THIRDPARTY=on && \
  make -j $CPU_CORES && \
  make install
@@ -496,9 +495,8 @@ RUN set -ex && CPU_CORES=$(cat /tmp/cpu-cores) && export PKG_CONFIG_PATH="$HOME/
 RUN set -ex && CPU_CORES=$(cat /tmp/cpu-cores) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/x264-snapshot* && \
  ./configure \
-	--disable-cli \
+	--bindir="$HOME/bin" \
 	--disable-opencl \
-	--disable-shared \
 	--enable-static \
 	--prefix="$HOME/ffmpeg_build" && \
  make -j $CPU_CORES && \
@@ -555,7 +553,7 @@ RUN set -ex && CPU_CORES=$(cat /tmp/cpu-cores) && export PKG_CONFIG_PATH="$HOME/
 #	--enable-vaapi \
 	--enable-version3 \
 	--extra-cflags="-I$HOME/ffmpeg_build/include" \
-	--extra-ldexeflags="-static" \
+#	--extra-ldexeflags="-static" \
 	--extra-ldflags="-L$HOME/ffmpeg_build/lib" \
 	--pkg-config-flags="--static" \
 	--prefix="$HOME/ffmpeg_build" && \
