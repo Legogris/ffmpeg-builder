@@ -303,6 +303,7 @@ RUN set -ex && CPU_CORES=$(cat /tmp/cpu-cores) && export PKG_CONFIG_PATH="$HOME/
 
 # compile libtiff
 RUN set -ex && CPU_CORES=$(cat /tmp/cpu-cores) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cp /tmp/patches/config_guess/config.* ${BUILD_ROOT}/tiff-${LIBTIFF_VER}/ && \
  cd ${BUILD_ROOT}/tiff-${LIBTIFF_VER} && \
  ./configure \
 	--disable-shared \
