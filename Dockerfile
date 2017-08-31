@@ -583,6 +583,19 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
+# check for missing lib links
+RUN \
+ LDD_ERROR_FFMPEG=$( ldd /root/bin/ffmpeg | grep -c "not found" ) || true && \
+ LDD_ERROR_FFPROBE=$( ldd /root/bin/ffprobe | grep -c "not found" ) || true && \
+ LDD_ERROR_FFSERVER=$( ldd /root/bin/ffserver | grep -c "not found" ) || true && \
+
+ if [ $((LDD_ERROR_FFMPEG + LDD_ERROR_FFPROBE + LDD_ERROR_FFSERVER )) -ne 0 ]; then \
+	echo "ffmpeg lib errors=-$LDD_ERROR_FFMPEG\\n\
+	ffmprobe lib errors=-$LDD_ERROR_FFPROBE\\n\
+	ffserver lib errors=-$LDD_ERROR_FFSERVER"; \
+ exit 1; \
+ fi
+
 # archive artefacts
 RUN \
  mkdir -p \
