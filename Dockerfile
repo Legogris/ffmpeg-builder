@@ -101,7 +101,6 @@ RUN \
 # fetch source code
 RUN set -ex && \
  echo "$SOURCE_URL_LIST" | tr " " "\\n" >> /tmp/url-list && \
- cd "${SOURCE_FOLDER}" && \
  while read -r urls; do \
 	FILE_EXTENSION=$(echo "$urls" | sed 's/.*\///'); \
 	curl -o \
@@ -138,7 +137,7 @@ RUN \
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/xvidcore*/build/generic && \
  ./configure \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix=/usr && \
  make -j $CPU_CORES && \
  make install
 
@@ -367,7 +366,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
-# compile libwebp
+# compile libwebp
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libwebp-${LIBWEBP_VER} && \
  ac_cv_search_png_get_libpng_ver="none required" \
@@ -572,6 +571,11 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	--prefix="$HOME/ffmpeg_build" && \
  make -j $CPU_CORES && \
  make install
+
+# copy static libs not found by ldd to host lib folder
+RUN cp -vH \
+	"${HOME}"/ffmpeg_build/lib/libopenjp2*.so* \
+	/lib/x86_64-linux-gnu/
 
 # archive artefacts
 RUN \
