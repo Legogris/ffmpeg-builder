@@ -100,11 +100,17 @@ RUN \
 
 # fetch source code
 RUN set -ex && \
- echo $SOURCE_URL_LIST | tr " " "\n" >> /tmp/wget-list && \
- wget \
-	--tries=5 \
-	-P ${SOURCE_FOLDER} \
-	-i /tmp/wget-list
+ echo "$SOURCE_URL_LIST" | tr " " "\\n" >> /tmp/url-list && \
+ cd "${SOURCE_FOLDER}" && \
+ while read -r urls; do \
+	FILE_EXTENSION=$(echo "$urls" | sed 's/.*\///'); \
+	curl -o \
+		"${SOURCE_FOLDER}/${FILE_EXTENSION}" -L -C - "$urls" \
+		--max-time 40 \
+		--retry 5 \
+		--retry-delay 3 \
+		--retry-max-time 240; \
+ done < /tmp/url-list
 
 # unpack source codes
 RUN set -ex && \
@@ -337,7 +343,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  cd ${BUILD_ROOT}/openjpeg-${OPENJPEG_VER} && \
  cmake -G "Unix Makefiles" \
 	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" \
-# 	-DBUILD_SHARED_LIBS:bool=off \
+	-DBUILD_SHARED_LIBS=ON \
 	-DBUILD_THIRDPARTY=on && \
  make -j $CPU_CORES && \
  make install
