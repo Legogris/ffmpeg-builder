@@ -337,12 +337,23 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
-# compile openjpeg
+# compile openjpeg 1st pass for shared local libs
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/openjpeg-${OPENJPEG_VER} && \
  cmake -G "Unix Makefiles" \
 	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" \
 	-DBUILD_SHARED_LIBS=ON \
+	-DBUILD_THIRDPARTY=on && \
+ make -j $CPU_CORES && \
+ make install
+
+# compile openjpeg 2nd pass for static libs for secondary apps
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/openjpeg-${OPENJPEG_VER} && \
+ make clean && \
+ cmake -G "Unix Makefiles" \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DBUILD_SHARED_LIBS=OFF \
 	-DBUILD_THIRDPARTY=on && \
  make -j $CPU_CORES && \
  make install
@@ -571,12 +582,6 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	--prefix="$HOME/ffmpeg_build" && \
  make -j $CPU_CORES && \
  make install
-
-# copy static libs not found by ldd to build host lib folder
-# this will need occasional review if build host lib location or gcc version changes etc
-RUN cp -vH \
-	"${HOME}"/ffmpeg_build/lib/libopenjp2*.so* \
-	/lib/x86_64-linux-gnu/
 
 # archive artefacts
 RUN \
