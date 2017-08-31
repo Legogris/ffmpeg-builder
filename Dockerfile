@@ -572,7 +572,8 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
-# copy static libs not found by ldd to host lib folder
+# copy static libs not found by ldd to build host lib folder
+# this will need occasional review if build host lib location or gcc version changes etc
 RUN cp -vH \
 	"${HOME}"/ffmpeg_build/lib/libopenjp2*.so* \
 	/lib/x86_64-linux-gnu/
