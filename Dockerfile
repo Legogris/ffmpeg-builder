@@ -120,7 +120,7 @@ RUN set -ex && \
 RUN \
  CPU_CORES=$( < /proc/cpuinfo grep -c processor ) || echo "failed cpu look up" && \
  if echo $CPU_CORES | grep -E  -q '^[0-9]+$'; then \
-        	: ; \
+		: ; \
 	if [ "$CPU_CORES" -gt 7 ]; then \
 		CPU_CORES=$(( CPU_CORES  / 2 )); \
 	elif [ "$CPU_CORES" -gt 5 ]; then \
@@ -130,11 +130,10 @@ RUN \
 	fi; \
  else CPU_CORES="1"; \
  fi && \
-
  echo "$CPU_CORES" > /tmp/cpu-cores
 
 # compile xvid
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/xvidcore*/build/generic && \
  ./configure \
 	--prefix=/usr && \
@@ -142,246 +141,251 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make install
 
 # compile libvpx
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libvpx-${LIBVPX_VER} && \
  sed -i 's/cp -p/cp/' build/make/Makefile && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile opencore_amr
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/opencore-amr-${OPENCORE_AMR_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile vo-amrwbenc
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/vo-amrwbenc-${VO_AMRWBENC_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile soxr
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/soxr-${SOXR_VER}-Source && \
  cmake -G "Unix Makefiles" \
 	-DBUILD_SHARED_LIBS:bool=off -DWITH_OPENMP:bool=off \
 	-DBUILD_TESTS:bool=off \
-	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" \
+	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build/usr" \
 	-Wno-dev && \
  make -j $CPU_CORES && \
  make install
 
 # compile opus
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/opus-${OPUS_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile fdk-aac
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/fdk-aac-${FDK_AAC_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile libpng
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libpng-${LIBPNG_VER} && \
  LIBS=-lpthread ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile freetype 1st pass
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/freetype-${FREETYPE_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" \
+	--prefix="$HOME/ffmpeg_build/usr" \
 	--without-harfbuzz && \
  make -j $CPU_CORES && \
  make install && \
- ln -s "$HOME/ffmpeg_build"/include/freetype2 "$HOME/ffmpeg_build"/include/freetype2/freetype
+ ln -s "$HOME/ffmpeg_build/usr"/include/freetype2 "$HOME/ffmpeg_build/usr"/include/freetype2/freetype
 
 # compile harfbuzz 1st pass
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/harfbuzz-${HARFBUZZ_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile freetype 2nd pass
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/freetype-${FREETYPE_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install && \
- ln -s "$HOME/ffmpeg_build"/include/freetype2 "$HOME/ffmpeg_build"/include/freetype2/freetype
+ ln -s "$HOME/ffmpeg_build/usr"/include/freetype2 "$HOME/ffmpeg_build/usr"/include/freetype2/freetype
 
 # compile harfbuzz 2nd pass
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/harfbuzz-${HARFBUZZ_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile fontconfig
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/fontconfig-${FONTCONFIG_VER} && \
  ./configure \
 	--disable-docs \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile fribidi
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/fribidi-${FRIBIDI_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile libass
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libass-${LIBASS_VER} && \
  ./autogen.sh && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile frei0r-plugins
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  mkdir -p \
 	${BUILD_ROOT}/frei0r-plugins-${FREI0R_VER}/build && \
  cd ${BUILD_ROOT}/frei0r-plugins-${FREI0R_VER}/build && \
  cmake -G "Unix Makefiles" \
 	-DBUILD_SHARED_LIBS=OFF \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" \
+	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build/usr" \
 	-Wno-dev .. && \
  make -j $CPU_CORES && \
  make install
 
 # compile libjpeg-turbo
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libjpeg-turbo-${LIBJPEG_TURBO_VER}  && \
  ./configure \
-	--disable-shared \
+	--enable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" \
+	--prefix="$HOME/ffmpeg_build/usr" \
 	--with-jpeg8 && \
  make -j $CPU_CORES && \
  make install
 
 # compile libtiff
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cp /tmp/patches/config_guess/config.* ${BUILD_ROOT}/tiff-${LIBTIFF_VER}/config/ && \
  cd ${BUILD_ROOT}/tiff-${LIBTIFF_VER} && \
  ./configure \
-	--disable-shared \
+	--disable-cxx \
+	--enable-shared \
 	--enable-jpeg \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" \
-	--with-jpeg-include-dir="$HOME/ffmpeg_build/include" \
-	--with-jpeg-lib-dir="$HOME/ffmpeg_build/lib" && \
+	--prefix="$HOME/ffmpeg_build/usr" \
+	--with-jpeg-include-dir="$HOME/ffmpeg_build/usr/include" \
+	--with-jpeg-lib-dir="$HOME/ffmpeg_build/usr/lib" && \
  make -j $CPU_CORES && \
  make install
 
 # compile little cms2
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/lcms2-${LCMS2_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" \
-	--with-jpeg="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" \
+	--with-jpeg="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
-# compile openjpeg 1st pass for shared local libs
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+# compile openjpeg 1st pass for downstream apps
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/openjpeg-${OPENJPEG_VER} && \
  cmake -G "Unix Makefiles" \
-	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" \
 	-DBUILD_SHARED_LIBS=ON \
-	-DBUILD_THIRDPARTY=on && \
+	-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build/usr" \
+	-DOPENJPEG_INSTALL_LIB_DIR=lib \
+	-DOPENJPEG_INSTALL_PACKAGE_DIR="$HOME/ffmpeg_build/usr/lib/cmake/openjpeg-${OPENJPEG_VER%.*}" && \
  make -j $CPU_CORES && \
  make install
 
-# compile openjpeg 2nd pass for static libs for secondary apps
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+# compile openjpeg 2nd pass for local libs
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/openjpeg-${OPENJPEG_VER} && \
  make clean && \
  cmake -G "Unix Makefiles" \
-	-DCMAKE_INSTALL_PREFIX=/usr \
 	-DBUILD_SHARED_LIBS=OFF \
-	-DBUILD_THIRDPARTY=on && \
+	-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+	-DCMAKE_INSTALL_PREFIX=/usr \
+	-DOPENJPEG_INSTALL_LIB_DIR=lib \
+	-DOPENJPEG_INSTALL_PACKAGE_DIR="/usr/lib/cmake/openjpeg-${OPENJPEG_VER%.*}" && \
  make -j $CPU_CORES && \
  make install
 
 # compile zlib
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/zlib-${ZLIB_VER} && \
  ./configure \
-	--prefix="$HOME/ffmpeg_build" \
+	--prefix="$HOME/ffmpeg_build/usr" \
 	--static && \
  make -j $CPU_CORES && \
  make install
 
 # compile giflib
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/giflib-${GIFLIB_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile libwebp
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libwebp-${LIBWEBP_VER} && \
  ac_cv_search_png_get_libpng_ver="none required" \
- LIBPNG_CONFIG="$HOME/ffmpeg_build/bin/libpng-config" \
+ LIBPNG_CONFIG="$HOME/ffmpeg_build/usr/bin/libpng-config" \
  ./configure \
 	--disable-shared \
 	--enable-libwebpdecoder \
@@ -390,153 +394,153 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	--enable-libwebpmux \
 	--enable-static \
 	--enable-swap-16bit-csp \
-	--prefix="$HOME/ffmpeg_build" \
-	--with-gifincludedir="$HOME/ffmpeg_build/include" \
-	--with-giflibdir="$HOME/ffmpeg_build/lib" \
-	--with-jpegincludedir="$HOME/ffmpeg_build/include" \
-	--with-jpeglibdir="$HOME/ffmpeg_build/lib" \
-	--with-pkgconfigdir="$HOME/ffmpeg_build/lib/pkgconfig" \
-	--with-pngincludedir="$HOME/ffmpeg_build/include" \
-	--with-tiffincludedir="$HOME/ffmpeg_build/include" \
-	--with-tifflibdir="$HOME/ffmpeg_build/lib" && \
+	--prefix="$HOME/ffmpeg_build/usr" \
+	--with-gifincludedir="$HOME/ffmpeg_build/usr/include" \
+	--with-giflibdir="$HOME/ffmpeg_build/usr/lib" \
+	--with-jpegincludedir="$HOME/ffmpeg_build/usr/include" \
+	--with-jpeglibdir="$HOME/ffmpeg_build/usr/lib" \
+	--with-pkgconfigdir="$HOME/ffmpeg_build/usr/lib/pkgconfig" \
+	--with-pngincludedir="$HOME/ffmpeg_build/usr/include" \
+	--with-tiffincludedir="$HOME/ffmpeg_build/usr/include" \
+	--with-tifflibdir="$HOME/ffmpeg_build/usr/lib" && \
  make -j $CPU_CORES && \
  make install
 
 # compile openssl
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/openssl-${OPENSSL_VER} && \
  ./config \
 	no-idea \
 	no-mdc2 \
 	no-rc5 \
 	no-shared \
-	--openssldir="$HOME/ffmpeg_build/etc/ssl" \
-	--prefix="$HOME/ffmpeg_build" \
-	zlib -I"$HOME/ffmpeg_build/include" -L"$HOME/ffmpeg_build/lib" && \
+	--openssldir="$HOME/ffmpeg_build/usr/etc/ssl" \
+	--prefix="$HOME/ffmpeg_build/usr" \
+	zlib -I"$HOME/ffmpeg_build/usr/include" -L"$HOME/ffmpeg_build/usr/lib" && \
  make depend && \
  make -j $CPU_CORES && \
  make install
 
 # compile rtmp
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  RTMP_VER=$(printf "%.7s" $RTMP_COMMIT) && \
  cd ${BUILD_ROOT}/rtmpdump-${RTMP_VER} && \
  make \
 	SHARED= \
 	SYS=posix \
-	XCFLAGS="-fpic -I$HOME/ffmpeg_build/include" \
-	XLDFLAGS=-L"$HOME/ffmpeg_build/lib" \
+	XCFLAGS="-fpic -I$HOME/ffmpeg_build/usr/include" \
+	XLDFLAGS=-L"$HOME/ffmpeg_build/usr/lib" \
 	XLIBS=-ldl && \
  make install \
-	prefix=$HOME/ffmpeg_build \
+	prefix=$HOME/ffmpeg_build/usr \
 	SHARED=
 
 # compile libogg
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libogg-${LIBOGG_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile speex
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/speex-${SPEEX_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile speexdsp
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/speexdsp-${SPEEX_DSP_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile libvorbis
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libvorbis-${LIBVORBIS_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile libtheora
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libtheora-${LIBTHEORA_VER} && \
  sed -i 's/png_\(sizeof\)/\1/g' examples/png2theora.c && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile lame
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/lame-${LAME_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-mp3rtp \
 	--enable-nasm \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile zimg
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/zimg-release-${ZIMG_VER} && \
  ./autogen.sh && \
  ./configure \
 	--disable-shared \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile vidstab
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/vid.stab-${VIDSTAB_VER} && \
  sed -i "s/BUILD_SHARED_LIBS/BUILD_STATIC_LIBS/" ./CMakeLists.txt && \
  cmake -G "Unix Makefiles" \
-	-DCMAKE_INSTALL_PREFIX:PATH="$HOME/ffmpeg_build" && \
+	-DCMAKE_INSTALL_PREFIX:PATH="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile x264
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/x264-snapshot* && \
  ./configure \
 	--bindir="$HOME/bin" \
 	--disable-opencl \
 	--enable-static \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
 # compile x265
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/x265_${X265_VER}/build/linux && \
  cmake -G "Unix Makefiles" \
-	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" \
+	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build/usr" \
 	-DENABLE_SHARED:bool=off \
 	../../source && \
  make -j $CPU_CORES && \
  make install
 
 # compile ffmpeg
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" && \
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/ffmpeg* && \
  for i in /tmp/patches/ffmpeg/*.patch; do patch -p1 -i $i; done && \
  ./configure \
@@ -575,11 +579,11 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	--enable-pic \
 #	--enable-vaapi \
 	--enable-version3 \
-	--extra-cflags="-I$HOME/ffmpeg_build/include" \
+	--extra-cflags="-I$HOME/ffmpeg_build/usr/include" \
 #	--extra-ldexeflags="-static" \
-	--extra-ldflags="-L$HOME/ffmpeg_build/lib" \
+	--extra-ldflags="-L$HOME/ffmpeg_build/usr/lib" \
 	--pkg-config-flags="--static" \
-	--prefix="$HOME/ffmpeg_build" && \
+	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
@@ -588,7 +592,6 @@ RUN \
  LDD_ERROR_FFMPEG=$( ldd /root/bin/ffmpeg | grep -c "not found" ) || true && \
  LDD_ERROR_FFPROBE=$( ldd /root/bin/ffprobe | grep -c "not found" ) || true && \
  LDD_ERROR_FFSERVER=$( ldd /root/bin/ffserver | grep -c "not found" ) || true && \
-
  if [ $((LDD_ERROR_FFMPEG + LDD_ERROR_FFPROBE + LDD_ERROR_FFSERVER )) -ne 0 ]; then \
 	echo "ffmpeg lib errors=-$LDD_ERROR_FFMPEG\\n\
 	ffmprobe lib errors=-$LDD_ERROR_FFPROBE\\n\
