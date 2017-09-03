@@ -94,7 +94,8 @@ COPY patches/ /tmp/patches/
 
 # attempt to set number of cores available and if 4 or more available set number for make to use
 # as one less than actual available, if 6 or more set to two less than available, otherwise use all cores
-# then fetch and unpack source codes
+# then fetch and unpack source codes and fetch latest config patches.
+
 RUN set -ex \
  CPU_CORES=$( < /proc/cpuinfo grep -c processor ) || echo "failed cpu look up" && \
  if echo $CPU_CORES | grep -E  -q '^[0-9]+$'; then \
@@ -110,10 +111,23 @@ RUN set -ex \
  fi && \
  echo "$CPU_CORES" > /tmp/cpu-cores && \
  mkdir -p \
+	/tmp/patches/config_guess \
 	${BUILD_ROOT} \
 	${SOURCE_FOLDER} && \
  rm -rf ${BUILD_ROOT}/* \
 	${SOURCE_FOLDER}/* && \
+ curl -o /tmp/patches/config_guess/config.guess -L -C - \
+	'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD' \
+		--max-time 40 \
+		--retry 5 \
+		--retry-delay 3 \
+		--retry-max-time 240 && \
+ curl -o /tmp/patches/config_guess/config.sub -L -C - \
+	'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD' \
+		--max-time 40 \
+		--retry 5 \
+		--retry-delay 3 \
+		--retry-max-time 240 && \
  echo "$SOURCE_URL_LIST" | tr " " "\\n" >> /tmp/url-list && \
  while read -r urls; do \
 	FILE_EXTENSION=$(echo "$urls" | sed 's/.*\///'); \
@@ -124,7 +138,9 @@ RUN set -ex \
 		--retry-delay 3 \
 		--retry-max-time 240; \
  done < /tmp/url-list && \
- for file in ${SOURCE_FOLDER}/* ; do tar xvf $file -C ${BUILD_ROOT} ; done
+ for file in ${SOURCE_FOLDER}/* ; do tar xvf $file -C ${BUILD_ROOT} ; done && \
+ find ${BUILD_ROOT}/ -name 'config.sub' -exec cp -v /tmp/patches/config_guess/config.sub {} \; && \
+ find ${BUILD_ROOT}/ -name 'config.guess' -exec cp -v /tmp/patches/config_guess/config.guess {} \;
 
 # compile xvid
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
@@ -298,7 +314,6 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 
 # compile libtiff
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
- cp /tmp/patches/config_guess/config.* ${BUILD_ROOT}/tiff-${LIBTIFF_VER}/config/ && \
  cd ${BUILD_ROOT}/tiff-${LIBTIFF_VER} && \
  ./configure \
 	--disable-cxx \
@@ -456,7 +471,6 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install && \
  cd ${BUILD_ROOT}/libtheora-${LIBTHEORA_VER} && \
- cp /tmp/patches/config_guess/config.* ${BUILD_ROOT}/libtheora-${LIBTHEORA_VER}/ && \
  sed -i 's/png_\(sizeof\)/\1/g' examples/png2theora.c && \
  ./configure \
 	--disable-shared \
