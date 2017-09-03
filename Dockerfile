@@ -92,33 +92,9 @@ SOURCE_FOLDER="/tmp/source-folder"
 # copy patches
 COPY patches/ /tmp/patches/
 
-# make folders
-RUN \
- mkdir -p \
-	${BUILD_ROOT} \
-	${SOURCE_FOLDER} && \
- rm -rf ${BUILD_ROOT}/* \
-	${SOURCE_FOLDER}/*
-
-# fetch source code
-RUN set -ex && \
- echo "$SOURCE_URL_LIST" | tr " " "\\n" >> /tmp/url-list && \
- while read -r urls; do \
-	FILE_EXTENSION=$(echo "$urls" | sed 's/.*\///'); \
-	curl -o \
-		"${SOURCE_FOLDER}/${FILE_EXTENSION}" -L -C - "$urls" \
-		--max-time 40 \
-		--retry 5 \
-		--retry-delay 3 \
-		--retry-max-time 240; \
- done < /tmp/url-list
-
-# unpack source codes
-RUN set -ex && \
- for file in ${SOURCE_FOLDER}/* ; do tar xvf $file -C ${BUILD_ROOT} ; done
-
 # attempt to set number of cores available and if 4 or more available set number for make to use
 # as one less than actual available, if 6 or more set to two less than available, otherwise use all cores
+# then fetch and unpack source codes
 RUN \
  CPU_CORES=$( < /proc/cpuinfo grep -c processor ) || echo "failed cpu look up" && \
  if echo $CPU_CORES | grep -E  -q '^[0-9]+$'; then \
@@ -132,7 +108,23 @@ RUN \
 	fi; \
  else CPU_CORES="1"; \
  fi && \
- echo "$CPU_CORES" > /tmp/cpu-cores
+ echo "$CPU_CORES" > /tmp/cpu-cores && \
+ mkdir -p \
+	${BUILD_ROOT} \
+	${SOURCE_FOLDER} && \
+ rm -rf ${BUILD_ROOT}/* \
+	${SOURCE_FOLDER}/* && \
+ echo "$SOURCE_URL_LIST" | tr " " "\\n" >> /tmp/url-list && \
+ while read -r urls; do \
+	FILE_EXTENSION=$(echo "$urls" | sed 's/.*\///'); \
+	curl -o \
+		"${SOURCE_FOLDER}/${FILE_EXTENSION}" -L -C - "$urls" \
+		--max-time 40 \
+		--retry 5 \
+		--retry-delay 3 \
+		--retry-max-time 240; \
+ done < /tmp/url-list && \
+ for file in ${SOURCE_FOLDER}/* ; do tar xvf $file -C ${BUILD_ROOT} ; done
 
 # compile xvid
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
@@ -214,7 +206,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
-# compile freetype 1st pass
+# compile freetype and harfbuzz twice each to resolve circular dependency issue
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/freetype-${FREETYPE_VER} && \
  ./configure \
@@ -224,20 +216,14 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	--without-harfbuzz && \
  make -j $CPU_CORES && \
  make install && \
- ln -s "$HOME/ffmpeg_build/usr"/include/freetype2 "$HOME/ffmpeg_build/usr"/include/freetype2/freetype
-
-# compile harfbuzz 1st pass
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
+ ln -s "$HOME/ffmpeg_build/usr"/include/freetype2 "$HOME/ffmpeg_build/usr"/include/freetype2/freetype && \
  cd ${BUILD_ROOT}/harfbuzz-${HARFBUZZ_VER} && \
  ./configure \
 	--disable-shared \
 	--enable-static \
 	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
- make install
-
-# compile freetype 2nd pass
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
+ make install && \
  cd ${BUILD_ROOT}/freetype-${FREETYPE_VER} && \
  ./configure \
 	--disable-shared \
@@ -245,10 +231,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install && \
- ln -s "$HOME/ffmpeg_build/usr"/include/freetype2 "$HOME/ffmpeg_build/usr"/include/freetype2/freetype
-
-# compile harfbuzz 2nd pass
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
+ ln -s "$HOME/ffmpeg_build/usr"/include/freetype2 "$HOME/ffmpeg_build/usr"/include/freetype2/freetype && \
  cd ${BUILD_ROOT}/harfbuzz-${HARFBUZZ_VER} && \
  ./configure \
 	--disable-shared \
@@ -339,7 +322,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
-# compile openjpeg 1st pass for downstream apps
+# compile openjpeg twice, once for system libs and once for static built downstream dependencies.
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/openjpeg-${OPENJPEG_VER} && \
  cmake -G "Unix Makefiles" \
@@ -349,10 +332,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	-DOPENJPEG_INSTALL_LIB_DIR=lib \
 	-DOPENJPEG_INSTALL_PACKAGE_DIR="$HOME/ffmpeg_build/usr/lib/cmake/openjpeg-${OPENJPEG_VER%.*}" && \
  make -j $CPU_CORES && \
- make install
-
-# compile openjpeg 2nd pass for local libs
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
+ make install && \
  cd ${BUILD_ROOT}/openjpeg-${OPENJPEG_VER} && \
  make clean && \
  cmake -G "Unix Makefiles" \
@@ -447,7 +427,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
-# compile speexdsp
+# compile speexdsp and speex
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/speexdsp-${SPEEX_DSP_VER} && \
  if [ "$( uname -p )" = "aarch64" ]; then _neon="--disable-neon"; fi && \
@@ -457,10 +437,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	--enable-static \
 	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
- make install
-
-# compile speex
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
+ make install && \
  cd ${BUILD_ROOT}/speex-${SPEEX_VER} && \
  ./configure \
 	--disable-shared \
@@ -469,7 +446,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
-# compile libvorbis
+# compile libvorbis and libtheora
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libvorbis-${LIBVORBIS_VER} && \
  ./configure \
@@ -477,10 +454,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	--enable-static \
 	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
- make install
-
-# compile libtheora
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
+ make install && \
  cd ${BUILD_ROOT}/libtheora-${LIBTHEORA_VER} && \
  cp /tmp/patches/config_guess/config.* ${BUILD_ROOT}/libtheora-${LIBTHEORA_VER}/ && \
  sed -i 's/png_\(sizeof\)/\1/g' examples/png2theora.c && \
@@ -523,7 +497,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
-# compile x264
+# compile x264 and x265
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/x264-snapshot* && \
  ./configure \
@@ -532,10 +506,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	--enable-static \
 	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
- make install
-
-# compile x265
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
+ make install && \
  cd ${BUILD_ROOT}/x265_${X265_VER}/build/linux && \
  cmake -G "Unix Makefiles" \
 	-DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build/usr" \
@@ -592,7 +563,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
-# check for missing lib links
+# check for missing lib links and archive artefacts if ok
 RUN \
  LDD_ERROR_FFMPEG=$( ldd /root/bin/ffmpeg | grep -c "not found" ) || true && \
  LDD_ERROR_FFPROBE=$( ldd /root/bin/ffprobe | grep -c "not found" ) || true && \
@@ -602,10 +573,7 @@ RUN \
 	ffmprobe lib errors=-$LDD_ERROR_FFPROBE\\n\
 	ffserver lib errors=-$LDD_ERROR_FFSERVER"; \
  exit 1; \
- fi
-
-# archive artefacts
-RUN \
+ fi && \
  mkdir -p \
 	/package && \
  tar -cvf /package/ffmpeg.tar -C /root/bin/ ffmpeg ffprobe ffserver && \
