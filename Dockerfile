@@ -6,41 +6,42 @@ FROM lsiodev/toolchain
 # used in conjunction with SOURCE_URL_LIST variable, add URL (including variable(s) from this list there
 # and set the version to download here
 
-ARG FDK_AAC_VER="0.1.5"
-ARG FFMPEG_VER="3.3.3"
-ARG FONTCONFIG_VER="2.12.4"
-ARG FREETYPE_VER="2.8"
-ARG FREI0R_VER="1.6.1"
-ARG FRIBIDI_VER="0.19.7"
-ARG GIFLIB_VER="5.1.4"
-ARG HARFBUZZ_VER="1.5.0"
-ARG LAME_VER="3.99.5"
-ARG LAME_VER_BRANCH="3.99"
-ARG LCMS2_VER="2.8"
-ARG LIBASS_VER="0.13.7"
-ARG LIBJPEG_TURBO_VER="1.5.2"
-ARG LIBOGG_VER="1.3.2"
-ARG LIBPNG_VER="1.6.31"
-ARG LIBTHEORA_VER="1.1.1"
-ARG LIBTIFF_VER="4.0.8"
-ARG LIBVORBIS_VER="1.3.5"
-ARG LIBVPX_VER="1.6.1"
-ARG LIBWEBP_VER="0.6.0"
-ARG OPENCORE_AMR_VER="0.1.5"
-ARG OPENJPEG_VER="2.2.0"
-ARG OPENSSL_VER="1.0.2l"
-ARG OPUS_VER="1.2.1"
-ARG RTMP_COMMIT="fa8646daeb19dfd12c181f7d19de708d623704c0"
-ARG SOXR_VER="0.1.2"
-ARG SPEEX_VER="1.2.0"
-ARG SPEEX_DSP_VER="1.2rc3"
-ARG VIDSTAB_VER="1.1.0"
-ARG VO_AMRWBENC_VER="0.1.3"
-ARG X264_VER="x264-snapshot-20170822-2245-stable"
-ARG X265_VER="2.5"
-ARG XVID_VER="1.3.4"
-ARG ZIMG_VER="2.5.1"
-ARG ZLIB_VER="1.2.11"
+ENV \
+FDK_AAC_VER="0.1.5" \
+FFMPEG_VER="3.3.3" \
+FONTCONFIG_VER="2.12.4" \
+FREETYPE_VER="2.8" \
+FREI0R_VER="1.6.1" \
+FRIBIDI_VER="0.19.7" \
+GIFLIB_VER="5.1.4" \
+HARFBUZZ_VER="1.5.0" \
+LAME_VER="3.99.5" \
+LAME_VER_BRANCH="3.99" \
+LCMS2_VER="2.8" \
+LIBASS_VER="0.13.7" \
+LIBJPEG_TURBO_VER="1.5.2" \
+LIBOGG_VER="1.3.2" \
+LIBPNG_VER="1.6.31" \
+LIBTHEORA_VER="1.1.1" \
+LIBTIFF_VER="4.0.8" \
+LIBVORBIS_VER="1.3.5" \
+LIBVPX_VER="1.6.1" \
+LIBWEBP_VER="0.6.0" \
+OPENCORE_AMR_VER="0.1.5" \
+OPENJPEG_VER="2.2.0" \
+OPENSSL_VER="1.0.2l" \
+OPUS_VER="1.2.1" \
+RTMP_COMMIT="fa8646daeb19dfd12c181f7d19de708d623704c0" \
+SOXR_VER="0.1.2" \
+SPEEX_VER="1.2.0" \
+SPEEX_DSP_VER="1.2rc3" \
+VIDSTAB_VER="1.1.0" \
+VO_AMRWBENC_VER="0.1.3" \
+X264_VER="x264-snapshot-20170822-2245-stable" \
+X265_VER="2.5" \
+XVID_VER="1.3.4" \
+ZIMG_VER="2.5.1" \
+ZLIB_VER="1.2.11"
 
 # source url list
 # use variables from package versions list
@@ -84,8 +85,9 @@ https://github.com/sekrit-twc/zimg/archive/release-${ZIMG_VER}.tar.gz \
 https://github.com/madler/zlib/archive/v${ZLIB_VER}.tar.gz"
 
 # environment variables
-ARG BUILD_ROOT="/tmp/build-root"
-ARG SOURCE_FOLDER="/tmp/source-folder"
+ENV \
+BUILD_ROOT="/tmp/build-root" \
+SOURCE_FOLDER="/tmp/source-folder"
 
 # copy patches
 COPY patches/ /tmp/patches/
