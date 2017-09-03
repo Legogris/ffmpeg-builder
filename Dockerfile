@@ -445,22 +445,22 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
  make -j $CPU_CORES && \
  make install
 
-# compile speex
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
- cd ${BUILD_ROOT}/speex-${SPEEX_VER} && \
- ./configure \
-	--disable-shared \
-	--enable-static \
-	--prefix="$HOME/ffmpeg_build/usr" && \
- make -j $CPU_CORES && \
- make install
-
 # compile speexdsp
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/speexdsp-${SPEEX_DSP_VER} && \
  if [ "$( uname -p )" = "aarch64" ]; then _neon="--disable-neon"; fi && \
  ./configure \
 	$_neon \
+	--disable-shared \
+	--enable-static \
+	--prefix="$HOME/ffmpeg_build/usr" && \
+ make -j $CPU_CORES && \
+ make install
+
+# compile speex
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/speex-${SPEEX_VER} && \
+ ./configure \
 	--disable-shared \
 	--enable-static \
 	--prefix="$HOME/ffmpeg_build/usr" && \
