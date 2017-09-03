@@ -95,7 +95,7 @@ COPY patches/ /tmp/patches/
 # attempt to set number of cores available and if 4 or more available set number for make to use
 # as one less than actual available, if 6 or more set to two less than available, otherwise use all cores
 # then fetch and unpack source codes
-RUN \
+RUN set -ex \
  CPU_CORES=$( < /proc/cpuinfo grep -c processor ) || echo "failed cpu look up" && \
  if echo $CPU_CORES | grep -E  -q '^[0-9]+$'; then \
 		: ; \
