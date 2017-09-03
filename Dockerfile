@@ -458,7 +458,9 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 # compile speexdsp
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/speexdsp-${SPEEX_DSP_VER} && \
+ if [ "$( uname -p )" = "aarch64" ]; then _neon="--disable-neon"; fi && \
  ./configure \
+	$_neon \
 	--disable-shared \
 	--enable-static \
 	--prefix="$HOME/ffmpeg_build/usr" && \
@@ -478,6 +480,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 # compile libtheora
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/libtheora-${LIBTHEORA_VER} && \
+ cp /tmp/patches/config_guess/config.* ${BUILD_ROOT}/libtheora-${LIBTHEORA_VER}/ && \
  sed -i 's/png_\(sizeof\)/\1/g' examples/png2theora.c && \
  ./configure \
 	--disable-shared \
