@@ -142,22 +142,32 @@ RUN set -ex \
  find ${BUILD_ROOT}/ -name 'config.sub' -exec cp -v /tmp/patches/config_guess/config.sub {} \; && \
  find ${BUILD_ROOT}/ -name 'config.guess' -exec cp -v /tmp/patches/config_guess/config.guess {} \;
 
+# compile libvpx
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/libvpx-${LIBVPX_VER} && \
+ ./configure \
+	--disable-install-srcs \
+	--disable-shared \
+	--enable-libs \
+	--enable-pic \
+	--enable-postproc \
+	--enable-runtime-cpu-detect \
+	--enable-static \
+	--enable-vp8 \
+	--enable-vp9 && \
+ make -j $CPU_CORES && \
+ make DIST_DIR="$HOME/ffmpeg_build/usr" install && \
+ chmod 644 \
+	"$HOME/ffmpeg_build/usr/include/vpx"/*.h \
+	"$HOME/ffmpeg_build/usr/lib/pkgconfig"/* && \
+ chown root:root -R "$HOME/ffmpeg_build" && \
+ chmod 755 "$HOME/ffmpeg_build/usr/lib"/*
+
 # compile xvid
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/xvidcore*/build/generic && \
  ./configure \
 	--prefix=/usr && \
- make -j $CPU_CORES && \
- make install
-
-# compile libvpx
-RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
- cd ${BUILD_ROOT}/libvpx-${LIBVPX_VER} && \
- sed -i 's/cp -p/cp/' build/make/Makefile && \
- ./configure \
-	--disable-shared \
-	--enable-static \
-	--prefix="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
 
