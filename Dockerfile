@@ -8,7 +8,7 @@ FROM lsiodev/toolchain
 
 ENV \
 FDK_AAC_VER="0.1.5" \
-FFMPEG_VER="3.3.3" \
+FFMPEG_VER="3.3.4" \
 FONTCONFIG_VER="2.12.4" \
 FREETYPE_VER="2.8" \
 FREI0R_VER="1.6.1" \
@@ -24,6 +24,7 @@ LIBOGG_VER="1.3.2" \
 LIBPNG_VER="1.6.32" \
 LIBTHEORA_VER="1.1.1" \
 LIBTIFF_VER="4.0.8" \
+LIBVMAF_VER="1.3.1" \
 LIBVORBIS_VER="1.3.5" \
 LIBVPX_VER="1.6.1" \
 LIBWEBP_VER="0.6.0" \
@@ -65,6 +66,7 @@ http://downloads.xiph.org/releases/ogg/libogg-${LIBOGG_VER}.tar.gz \
 https://downloads.sourceforge.net/libpng/libpng-${LIBPNG_VER}.tar.xz \
 https://downloads.xiph.org/releases/theora/libtheora-${LIBTHEORA_VER}.tar.xz \
 http://download.osgeo.org/libtiff/tiff-${LIBTIFF_VER}.tar.gz \
+https://github.com/Netflix/vmaf/archive/v${LIBVMAF_VER}.tar.gz \
 https://downloads.xiph.org/releases/vorbis/libvorbis-${LIBVORBIS_VER}.tar.xz \
 https://github.com/webmproject/libvpx/archive/v${LIBVPX_VER}.tar.gz \
 http://downloads.webmproject.org/releases/webp/libwebp-${LIBWEBP_VER}.tar.gz \
@@ -520,6 +522,12 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 	-DCMAKE_INSTALL_PREFIX:PATH="$HOME/ffmpeg_build/usr" && \
  make -j $CPU_CORES && \
  make install
+
+# compile vmaf
+RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
+ cd ${BUILD_ROOT}/vmaf-${LIBVMAF_VER} && \
+ make PREFIX="$HOME/ffmpeg_build/usr" -j $CPU_CORES && \
+ make PREFIX="$HOME/ffmpeg_build/usr" install
 
 # compile x264 and x265
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
