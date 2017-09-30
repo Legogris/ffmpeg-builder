@@ -618,7 +618,7 @@ RUN \
  done < /tmp/packages_list && \
  mkdir -p \
 	/package && \
- tar -cvf /package/ffmpeg.tar -C /root/bin/ $OUTPUT_PACKAGES && \
+ tar -cvf /package/ffmpeg.tar -C $HOME/bin/ $OUTPUT_PACKAGES && \
  chmod -R 777 /package
 
 CMD ["cp", "-avr", "/package", "/mnt/"]
