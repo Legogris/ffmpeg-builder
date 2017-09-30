@@ -1,5 +1,13 @@
 FROM lsiodev/toolchain
 
+# output packages
+ARG OUTPUT_PACKAGES="\
+ffmpeg \
+ffprobe \
+ffserver \
+qt-faststart"
+
+
 # package versions
 # pay special attention to the x264 variable
 # x264 version needs to be everything after /snapshots/ in the url from videolan.org excluding .tar.bz2
@@ -599,19 +607,18 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 
 # check for missing lib links and archive artefacts if ok
 RUN \
- OUTPUT_PACKAGES=(ffmpeg ffprobe ffserver qt-faststart) && \
- for packages in "${OUTPUT_PACKAGES[@]}"; do \
- LDD_ERROR_${packages}=$( ldd /root/bin/packages| grep -c "not found" ) || true && \
- if [ $((LDD_ERROR_ffmpeg + LDD_ERROR_ffprobe + LDD_ERROR_ffserver + LDD_ERROR_qtfaststart )) -ne 0 ]; then \
-	echo "ffmpeg lib errors=-$LDD_ERROR_ffmpeg\\n\
-	ffmprobe lib errors=-$LDD_ERROR_ffprobe\\n\
-	ffserver lib errors=-$LDD_ERROR_ffserver\\n\
-	qt-faststart lib errors=-$LDD_ERROR_qtfaststart"; \
- exit 1; \
- fi && \
+ echo "$OUTPUT_PACKAGES" | tr " " "\\n" >> /tmp/packages_list && \
+ while read -r outpackages; \
+ do \
+ LDD_ERROR_outpackages="$( ldd $HOME/bin/$outpackages | grep -c 'not found' )" || true; \
+ if [ $LDD_ERROR_outpackages -ne 0 ]; then \
+	echo "number of $outpackages lib errors = $LDD_ERROR_outpackages" && \
+	exit 1; \
+	fi \
+ done < /tmp/packages_list && \
  mkdir -p \
 	/package && \
- tar -cvf /package/ffmpeg.tar -C /root/bin/ ffmpeg ffprobe ffserver qt-faststart && \
+ tar -cvf /package/ffmpeg.tar -C /root/bin/ $OUTPUT_PACKAGES && \
  chmod -R 777 /package
 
 CMD ["cp", "-avr", "/package", "/mnt/"]
