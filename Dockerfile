@@ -599,15 +599,14 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 
 # check for missing lib links and archive artefacts if ok
 RUN \
- LDD_ERROR_FFMPEG=$( ldd /root/bin/ffmpeg | grep -c "not found" ) || true && \
- LDD_ERROR_FFPROBE=$( ldd /root/bin/ffprobe | grep -c "not found" ) || true && \
- LDD_ERROR_FFSERVER=$( ldd /root/bin/ffserver | grep -c "not found" ) || true && \
- LDD_ERROR_QTFASTSTART=$( ldd /root/bin/qt-faststart | grep -c "not found" ) || true && \
- if [ $((LDD_ERROR_FFMPEG + LDD_ERROR_FFPROBE + LDD_ERROR_FFSERVER + LDD_ERROR_QTFASTSTART )) -ne 0 ]; then \
-	echo "ffmpeg lib errors=-$LDD_ERROR_FFMPEG\\n\
-	ffmprobe lib errors=-$LDD_ERROR_FFPROBE\\n\
-	ffserver lib errors=-$LDD_ERROR_FFSERVER\\n\
-	qt-faststart lib errors=-$LDD_ERROR_QTFASTSTART"; \
+ OUTPUT_PACKAGES=(ffmpeg ffprobe ffserver qt-faststart) && \
+ for packages in "${OUTPUT_PACKAGES[@]}"; do \
+ LDD_ERROR_${packages}=$( ldd /root/bin/packages| grep -c "not found" ) || true && \
+ if [ $((LDD_ERROR_ffmpeg + LDD_ERROR_ffprobe + LDD_ERROR_ffserver + LDD_ERROR_qtfaststart )) -ne 0 ]; then \
+	echo "ffmpeg lib errors=-$LDD_ERROR_ffmpeg\\n\
+	ffmprobe lib errors=-$LDD_ERROR_ffprobe\\n\
+	ffserver lib errors=-$LDD_ERROR_ffserver\\n\
+	qt-faststart lib errors=-$LDD_ERROR_qtfaststart"; \
  exit 1; \
  fi && \
  mkdir -p \
