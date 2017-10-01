@@ -106,19 +106,17 @@ COPY patches/ /tmp/patches/
 # as one less than actual available, if 6 or more set to two less than available, otherwise use all cores
 # then fetch and unpack source codes and fetch latest config patches.
 
-RUN set -ex \
+RUN \
  CPU_CORES=$( < /proc/cpuinfo grep -c processor ) || echo "failed cpu look up" && \
  if echo $CPU_CORES | grep -E  -q '^[0-9]+$'; then \
-		: ; \
-	if [ "$CPU_CORES" -gt 7 ]; then \
-		CPU_CORES=$(( CPU_CORES  / 2 )); \
-	elif [ "$CPU_CORES" -gt 5 ]; then \
-		CPU_CORES=$(( CPU_CORES  - 2 )); \
-	elif [ "$CPU_CORES" -gt 3 ]; then \
-		CPU_CORES=$(( CPU_CORES  - 1 )); \
-	fi; \
- else CPU_CORES="1"; \
- fi && \
+	: ;\
+ if [ "$CPU_CORES" -gt 7 ]; then \
+	CPU_CORES=$(( CPU_CORES  - 3 )); \
+ elif [ "$CPU_CORES" -gt 5 ]; then \
+	CPU_CORES=$(( CPU_CORES  - 2 )); \
+ elif [ "$CPU_CORES" -gt 3 ]; then \
+	CPU_CORES=$(( CPU_CORES  - 1 )); fi \
+ else CPU_CORES="1"; fi && \
  echo "$CPU_CORES" > /tmp/cpu-cores && \
  mkdir -p \
 	/tmp/patches/config_guess \
@@ -126,6 +124,7 @@ RUN set -ex \
 	${SOURCE_FOLDER} && \
  rm -rf ${BUILD_ROOT}/* \
 	${SOURCE_FOLDER}/* && \
+ set -ex && \
  curl -o /tmp/patches/config_guess/config.guess -L -C - \
 	'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD' \
 		--max-time 40 \
