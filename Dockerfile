@@ -607,6 +607,9 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 
 # check for missing lib links and archive artefacts if ok
 RUN \
+ mkdir -p \
+	/package/libs && \
+ cd $HOME/bin && \
  echo "$OUTPUT_PACKAGES" | tr " " "\\n" >> /tmp/packages_list && \
  while read -r outpackages; \
  do \
@@ -614,11 +617,14 @@ RUN \
  if [ $LDD_ERROR_outpackages -ne 0 ]; then \
 	echo "number of $outpackages lib errors = $LDD_ERROR_outpackages" && \
 	exit 1; \
-	fi \
+	fi; \
+ for lib in `ldd $outpackages \
+	| awk '{if(substr($3,0,1)=="/") print $1,$3}' \
+	| cut -d' ' -f2`; do \
+	cp -avn $lib /package/libs/`basename $lib`; \
+	done; \
  done < /tmp/packages_list && \
- mkdir -p \
-	/package && \
- tar -cvf /package/ffmpeg.tar -C $HOME/bin/ $OUTPUT_PACKAGES && \
+ tar -cvf /package/ffmpeg.tar -C $HOME/bin/ $OUTPUT_PACKAGES -C /package/ libs && \
  chmod -R 777 /package
 
 CMD ["cp", "-avr", "/package", "/mnt/"]
