@@ -16,13 +16,13 @@ qt-faststart"
 
 ENV \
 FDK_AAC_VER="0.1.5" \
-FFMPEG_VER="3.3.4" \
+FFMPEG_VER="3.4" \
 FONTCONFIG_VER="2.12.4" \
-FREETYPE_VER="2.8" \
+FREETYPE_VER="2.8.1" \
 FREI0R_VER="1.6.1" \
 FRIBIDI_VER="0.19.7" \
 GIFLIB_VER="5.1.4" \
-HARFBUZZ_VER="1.5.0" \
+HARFBUZZ_VER="1.6.0" \
 LAME_VER="3.99.5" \
 LAME_VER_BRANCH="3.99" \
 LCMS2_VER="2.8" \
@@ -98,9 +98,6 @@ https://github.com/madler/zlib/archive/v${ZLIB_VER}.tar.gz"
 ENV \
 BUILD_ROOT="/tmp/build-root" \
 SOURCE_FOLDER="/tmp/source-folder"
-
-# copy patches
-COPY patches/ /tmp/patches/
 
 # attempt to set number of cores available and if 4 or more available set number for make to use
 # as one less than actual available, if 6 or more set to two less than available, otherwise use all cores
@@ -557,7 +554,7 @@ RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOM
 # compile ffmpeg
 RUN set -ex && CPU_CORES=$( cat /tmp/cpu-cores ) && export PKG_CONFIG_PATH="$HOME/ffmpeg_build/usr/lib/pkgconfig" && \
  cd ${BUILD_ROOT}/ffmpeg* && \
- for i in /tmp/patches/ffmpeg/*.patch; do patch -p1 -i $i; done && \
+# for i in /tmp/patches/ffmpeg/*.patch; do patch -p1 -i $i; done && \
  ./configure \
 	--bindir="$HOME/bin" \
 	--disable-debug \
